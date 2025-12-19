@@ -9,7 +9,6 @@ library(lubridate)
 library(plotly)
 library(digest)  # for password hashing
 
-
 # -------------------------- DB CONNECTION --------------------------
 con <- dbConnect(
   RMySQL::MySQL(),
@@ -50,15 +49,21 @@ server <- function(input, output, session) {
       tags$style(HTML("
 /* ===== LOGIN PAGE ONLY (SCOPED) ===== */
 .login-page {
-  min-height: 100vh;
-  background-color: #F8FAFC;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-family: 'Inter', sans-serif;
-  padding: 0 !important;
-  margin: 0;
-}
+        min-height: 100vh;
+        background-color: #F8FAFC;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-family: 'Inter', sans-serif;
+        padding: 0 !important;
+        margin: 0;
+        position: relative; /* needed for bubbles */
+      }
+      
+      .login-container {
+        position: relative; /* make login above bubbles */
+        z-index: 1;
+      }
 
 .login-page .login-container { 
   width: 100%;
@@ -183,19 +188,88 @@ server <- function(input, output, session) {
     padding: 30px 20px;
   }
 }
+
+/* ===== CAR BUBBLES ANIMATION ===== */
+.car-bubbles {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none; /* so it doesn’t block form clicks */
+  overflow: hidden;
+  z-index: 0;
+}
+
+.car-bubbles div {
+  position: absolute;
+  bottom: -50px; /* start below the screen */
+  width: 200px;
+  height: 200px;
+  background-image: url('uploads/car_icon.png'); /* small car image */
+  background-size: contain;
+  background-repeat: no-repeat;
+  opacity: 0;            /* start invisible */
+  animation: rise 10s linear infinite;
+}
+
+@keyframes rise {
+  0% {
+    transform: translateY(0) scale(0.5);
+    opacity: 0;
+  }
+  10% {
+    opacity: 0.7;
+  }
+  100% {
+    transform: translateY(-110vh) scale(1);
+    opacity: 0;
+  }
+}
+
 ")),
       tags$script(HTML("
-  // Listen for Enter key on any input inside .login-form, even if dynamically rendered
-  $(document).on('keypress', '.login-form input', function(e) {
-    if(e.which === 13) {  // Enter key
-      $('#login_btn').click();
-    }
-  });
-"))
+      // Trigger login on Enter key
+      $(document).on('keypress', '.login-form input', function(e) {
+        if(e.which === 13) {  
+          $('#login_btn').click();
+        }
+      });
+
+      // Generate car bubbles animation
+$(document).ready(function(){
+  const container = $('.car-bubbles');
+  const bubbleCount = 40; // number of bubbles
+
+  for(let i = 0; i < bubbleCount; i++){
+    const car = $('<div></div>');
+    
+    const leftPos = Math.random() * 100;          // horizontal position
+    const startBottom = Math.random() * 100 - 50; // start at random height (-50 to 50px below container)
+    const duration = 8 + Math.random() * 5;       // animation duration
+    const size = 200 + Math.random() * 50;         // bubble size 80-130px
+    const delay = Math.random() * 5;              // animation delay
+
+    car.css({
+      left: leftPos + '%',
+      bottom: startBottom + 'px',
+      width: size + 'px',
+      height: size + 'px',
+      animationDuration: duration + 's',
+      animationDelay: delay + 's'
+    });
+
+    container.append(car);
+  }
+});
+
+    "))
     ),
     
     div(
       class = "login-page",
+      div(class = "car-bubbles"),
+      
       div(
         class = "login-container",
         div(class = "login-left"),
