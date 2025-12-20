@@ -1,19 +1,36 @@
 source("packages.R")
 
 # -------------------------- DB CONNECTION --------------------------
-# SQLite database file in your project folder
-con <- dbConnect(
-  RSQLite::SQLite(),
-  "car_rental.sqlite"
-)
+get_con <- function() {
+  # If connection doesn't exist or is invalid, create it
+  if (!exists("con", envir = .GlobalEnv) || !DBI::dbIsValid(con)) {
+    con <<- DBI::dbConnect(RSQLite::SQLite(), "car_rental.sqlite")
+    DBI::dbExecute(con, "PRAGMA foreign_keys = ON;")
+  }
+  con
+}
 
-# Ensure foreign keys are enforced
-dbExecute(con, "PRAGMA foreign_keys = ON;")
+# -------------------------- SAFE QUERY FUNCTION --------------------------
+safe_query <- function(q, conn = get_con()) {
+  # Reconnect if connection is invalid or closed
+  if (!DBI::dbIsValid(conn)) {
+    message("Reconnecting to SQLite database...")
+    conn <- get_con()
+  }
+  
+  tryCatch(
+    DBI::dbGetQuery(conn, q),
+    error = function(e) {
+      message("DB query error: ", e$message)
+      data.frame()
+    }
+  )
+}
 
 # -------------------------- CREATE TABLES --------------------------
 
 # Customers table
-dbExecute(con, "
+dbExecute(get_con(), "
 CREATE TABLE IF NOT EXISTS customers (
   customer_id INTEGER PRIMARY KEY AUTOINCREMENT,
   name TEXT NOT NULL,
@@ -24,7 +41,7 @@ CREATE TABLE IF NOT EXISTS customers (
 ")
 
 # Cars table
-dbExecute(con, "
+dbExecute(get_con(), "
 CREATE TABLE IF NOT EXISTS cars (
   car_id INTEGER PRIMARY KEY AUTOINCREMENT,
   brand TEXT NOT NULL,
@@ -39,7 +56,7 @@ CREATE TABLE IF NOT EXISTS cars (
 ")
 
 # Users table
-dbExecute(con, "
+dbExecute(get_con(), "
 CREATE TABLE IF NOT EXISTS users (
   user_id INTEGER PRIMARY KEY AUTOINCREMENT,
   email TEXT NOT NULL UNIQUE,
@@ -50,7 +67,7 @@ CREATE TABLE IF NOT EXISTS users (
 ")
 
 # Bookings table
-dbExecute(con, "
+dbExecute(get_con(), "
 CREATE TABLE IF NOT EXISTS bookings (
   booking_id INTEGER PRIMARY KEY AUTOINCREMENT,
   customer_id INTEGER NOT NULL,
@@ -65,16 +82,6 @@ CREATE TABLE IF NOT EXISTS bookings (
 )
 ")
 
-# -------------------------- SAFE QUERY FUNCTION --------------------------
-safe_query <- function(q) {
-  tryCatch(
-    dbGetQuery(con, q),
-    error = function(e) {
-      message("DB query error: ", e$message)
-      data.frame()
-    }
-  )
-}
 
 # -------------------------- UI --------------------------
 
@@ -416,9 +423,9 @@ $(document).on('click', '.toggle-password', function () {
     req(input$login_email, input$login_pass)
     
     user <- safe_query(paste0(
-      "SELECT * FROM users WHERE email = ",
-      DBI::dbQuoteString(con, input$login_email)
+      "SELECT * FROM users WHERE email = ", DBI::dbQuoteString(get_con(), input$login_email)
     ))
+    
     
     if (nrow(user) == 0) {
       output$login_msg <- renderText("Invalid email or password.")
@@ -1256,7 +1263,7 @@ $(document).on('click', '.toggle-password', function () {
   cars_df <- reactivePoll(
     poll_interval_ms, session,
     checkFunc = function() {
-      r <- dbGetQuery(con, "SELECT MAX(updated_at) AS last FROM Cars")
+      r <- safe_query("SELECT MAX(updated_at) AS last FROM Cars")
       as.character(r$last)
     },
     valueFunc = function() {
@@ -1267,28 +1274,26 @@ $(document).on('click', '.toggle-password', function () {
   bookings_df <- reactivePoll(
     poll_interval_ms, session,
     checkFunc = function() {
-      r <- dbGetQuery(con, "SELECT MAX(updated_at) AS last FROM Bookings")
+      r <- safe_query("SELECT MAX(updated_at) AS last FROM Bookings")
       as.character(r$last)
     },
     valueFunc = function() {
-      safe_query("
-      SELECT booking_id, customer_id, car_id, start_date, end_date, total_amount, status
-      FROM Bookings
-      ORDER BY booking_id DESC
-    ")
+      safe_query("SELECT booking_id, customer_id, car_id, start_date, end_date, total_amount, status
+                  FROM Bookings ORDER BY booking_id DESC")
     }
   )
   
   customers_df <- reactivePoll(
     poll_interval_ms, session,
     checkFunc = function() {
-      r <- dbGetQuery(con, "SELECT COUNT(*) AS n FROM Customers")
+      r <- safe_query("SELECT COUNT(*) AS n FROM Customers")
       r$n
     },
     valueFunc = function() {
       safe_query("SELECT * FROM Customers ORDER BY customer_id ASC")
     }
   )
+  
   
   
   editing_booking <- reactiveVal(FALSE)
