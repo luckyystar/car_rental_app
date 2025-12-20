@@ -2288,9 +2288,6 @@ Shiny.addCustomMessageHandler('clear_selected_car', function(x) {
     )
   })
   
-  session$onSessionEnded(function() {
-    tryCatch({ dbDisconnect(con) }, error = function(e) { })
-  })
 }
 
 # -------------------------- RUN APP --------------------------
