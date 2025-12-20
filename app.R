@@ -1286,13 +1286,14 @@ $(document).on('click', '.toggle-password', function () {
   customers_df <- reactivePoll(
     poll_interval_ms, session,
     checkFunc = function() {
-      r <- safe_query("SELECT COUNT(*) AS n FROM Customers")
-      r$n
+      r <- safe_query("SELECT MAX(updated_at) AS last FROM Customers")
+      as.character(r$last)  # This changes whenever a row is updated
     },
     valueFunc = function() {
       safe_query("SELECT * FROM Customers ORDER BY customer_id ASC")
     }
   )
+  
   
   
   
