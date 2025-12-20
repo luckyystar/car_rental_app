@@ -46,6 +46,12 @@ server <- function(input, output, session) {
     style = "padding:0; margin:0;",
     
     tags$head(
+      
+      tags$link(
+        rel = "stylesheet",
+        href = "https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
+      ),
+      
       tags$style(HTML("
     /* ===== LOGIN PAGE ===== */
     .login-page {
@@ -227,6 +233,31 @@ server <- function(input, output, session) {
       }
     }
     
+    /* ===== PASSWORD TOGGLE ===== */
+.password-wrapper {
+  position: relative;
+  width: 100%;
+}
+
+.password-wrapper input {
+  padding-right: 42px !important; /* space for eye */
+}
+
+.toggle-password {
+  position: absolute;
+  top: 50%;
+  right: 14px;
+  transform: translateY(-50%);
+  cursor: pointer;
+  color: #6B7280;
+  font-size: 16px;
+}
+
+.toggle-password:hover {
+  color: #111827;
+}
+
+    
     ")),
       tags$script(HTML("
       // Trigger login on Enter key
@@ -267,6 +298,20 @@ server <- function(input, output, session) {
           container.append(car);
         }
       });
+      
+      // Toggle password visibility
+$(document).on('click', '.toggle-password', function () {
+  const input = $('#login_pass');
+  const icon = $(this).find('i');
+
+  if (input.attr('type') === 'password') {
+    input.attr('type', 'text');
+    icon.removeClass('fa-eye-slash').addClass('fa-eye');
+  } else {
+    input.attr('type', 'password');
+    icon.removeClass('fa-eye').addClass('fa-eye-slash');
+  }
+});
 
     "))
     ),
@@ -295,7 +340,18 @@ server <- function(input, output, session) {
             textInput("login_email", NULL, placeholder = "Enter your email"),
             
             tags$label("Password", class = "login-label"),
-            passwordInput("login_pass", NULL, placeholder = "Enter your password"),
+            div(
+              class = "password-wrapper",
+              passwordInput(
+                "login_pass",
+                NULL,
+                placeholder = "Enter your password"
+              ),
+              tags$span(
+                class = "toggle-password",
+                tags$i(class = "fa fa-eye-slash")
+              )
+            ),
             
             actionButton("login_btn", "Login", class = "btn-login"),
             
