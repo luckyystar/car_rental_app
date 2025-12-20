@@ -31,7 +31,7 @@ safe_query <- function(q) {
 
 # -------------------------- UI --------------------------
 
-ui <- uiOutput("app_ui")  # the whole app is conditional on login
+ui <- uiOutput("app_ui")  
 
 # -------------------------- SERVER --------------------------
 server <- function(input, output, session) {
@@ -47,8 +47,8 @@ server <- function(input, output, session) {
     
     tags$head(
       tags$style(HTML("
-/* ===== LOGIN PAGE ONLY (SCOPED) ===== */
-.login-page {
+    /* ===== LOGIN PAGE ===== */
+    .login-page {
         min-height: 100vh;
         background-color: #F8FAFC;
         display: flex;
@@ -65,203 +65,208 @@ server <- function(input, output, session) {
         z-index: 1;
       }
 
-.login-page .login-container { 
-  width: 100%;
-  max-width: 1200px;
-  min-height: 660px;
-  box-shadow: 0 20px 50px rgba(0,0,0,0.12);
-  border-radius: 18px;
-  overflow: hidden;
-  display: flex;
-  background: #FFFFFF;
-  flex-wrap: wrap; /* Allow responsive stacking */
-}
-
-/* LEFT & RIGHT */
-.login-page .login-left,
-.login-page .login-right {
-  flex: 1 1 50%;
-  min-width: 300px; /* Prevent being too small */
-}
-
-.login-page .login-left {
-  background-image: url('uploads/login.png');
-  background-size: cover;
-  background-position: center;
-}
-
-/* RIGHT SIDE */
-.login-page .login-right {
-  padding: 40px 30px; /* Reduced padding for responsiveness */
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  box-sizing: border-box;
-}
-
-/* LOGO */
-.login-page .login-logo {
-  max-width: 5200px;
-  width: 100%;
-  margin-bottom: 20px;
-}
-
-/* TITLE & TEXT */
-.login-page h2 {
-  color: #0B1F5B;  /* deep blue */
-  font-weight: 800;
-  font-size: 28px;
-  margin-bottom: 6px;
-  text-align: center;
-}
-
-.login-page p {
-  text-align: center;
-  color: #6B7280;
-  margin-bottom: 20px;
-  font-size: 14px;
-}
-
-/* FORM WRAPPER */
-.login-page .login-form {
-  width: 100%;
-  max-width: 560px;
-}
-
-/* Labels */
-.login-page .login-label {
-  font-size: 13px;
-  font-weight: 600;
-  color: #374151;
-  margin-bottom: 6px;
-  display: block;
-}
-
-/* Form inputs */
-.login-page .login-form .form-group {
-  width: 100%;
-  margin-bottom: 16px;
-}
-
-.login-page .login-form input {
-  width: 100% !important;
-  height: 48px;
-  padding: 10px 14px;
-  font-size: 14px;
-  border-radius: 10px;
-  border: 1px solid #D1D5DB;
-}
-
-/* BUTTON */
-.login-page .btn-login {
-  width: 100% !important;
-  height: 50px;
-  background-color: #F59E0B;
-  color: #FFFFFF;
-  border-radius: 12px;
-  font-weight: 800;
-  font-size: 15px;
-  border: none;
-  margin-top: 8px;
-}
-
-/* MESSAGE */
-.login-page .login-msg {
-  margin-top: 18px;
-  color: #DC2626;
-  font-weight: 600;
-  text-align: center;
-}
-
-/* RESPONSIVE */
-@media (max-width: 768px) {
-  .login-page .login-container {
-    flex-direction: column;
-    min-height: 600px;
-  }
-  .login-page .login-left,
-  .login-page .login-right {
-    width: 100%;
-  }
-  .login-page .login-right {
-    padding: 30px 20px;
-  }
-}
-
-/* ===== CAR BUBBLES ANIMATION ===== */
-.car-bubbles {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  pointer-events: none; /* so it doesn’t block form clicks */
-  overflow: hidden;
-  z-index: 0;
-}
-
-.car-bubbles div {
-  position: absolute;
-  bottom: -50px; /* start below the screen */
-  width: 200px;
-  height: 200px;
-  background-image: url('uploads/car_icon.png'); /* small car image */
-  background-size: contain;
-  background-repeat: no-repeat;
-  opacity: 0;            /* start invisible */
-  animation: rise 10s linear infinite;
-}
-
-@keyframes rise {
-  0% {
-    transform: translateY(0) scale(0.5);
-    opacity: 0;
-  }
-  10% {
-    opacity: 0.7;
-  }
-  100% {
-    transform: translateY(-110vh) scale(1);
-    opacity: 0;
-  }
-}
-
-")),
+    .login-page .login-container { 
+      width: 100%;
+      max-width: 1200px;
+      min-height: 660px;
+      box-shadow: 0 20px 50px rgba(0,0,0,0.12);
+      border-radius: 18px;
+      overflow: hidden;
+      display: flex;
+      background: #FFFFFF;
+      flex-wrap: wrap; /* Allow responsive stacking */
+    }
+    
+    /* LEFT & RIGHT */
+    .login-page .login-left,
+    .login-page .login-right {
+      flex: 1 1 50%;
+      min-width: 300px; /* Prevent being too small */
+    }
+    
+    .login-page .login-left {
+      background-image: url('uploads/login.png');
+      background-size: cover;
+      background-position: center;
+    }
+    
+    /* RIGHT SIDE */
+    .login-page .login-right {
+      padding: 40px 30px; /* Reduced padding for responsiveness */
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      box-sizing: border-box;
+    }
+    
+    /* LOGO */
+    .login-page .login-logo {
+      max-width: 5200px;
+      width: 100%;
+      margin-bottom: 20px;
+    }
+    
+    /* TITLE & TEXT */
+    .login-page h2 {
+      color: #0B1F5B;  /* deep blue */
+      font-weight: 800;
+      font-size: 28px;
+      margin-bottom: 6px;
+      text-align: center;
+    }
+    
+    .login-page p {
+      text-align: center;
+      color: #6B7280;
+      margin-bottom: 20px;
+      font-size: 14px;
+    }
+    
+    /* FORM WRAPPER */
+    .login-page .login-form {
+      width: 100%;
+      max-width: 560px;
+    }
+    
+    /* Labels */
+    .login-page .login-label {
+      font-size: 13px;
+      font-weight: 600;
+      color: #374151;
+      margin-bottom: 6px;
+      display: block;
+    }
+    
+    /* Form inputs */
+    .login-page .login-form .form-group {
+      width: 100%;
+      margin-bottom: 16px;
+    }
+    
+    .login-page .login-form input {
+      width: 100% !important;
+      height: 48px;
+      padding: 10px 14px;
+      font-size: 14px;
+      border-radius: 10px;
+      border: 1px solid #D1D5DB;
+    }
+    
+    /* BUTTON */
+    .login-page .btn-login {
+      width: 100% !important;
+      height: 50px;
+      background-color: #F59E0B;
+      color: #FFFFFF;
+      border-radius: 12px;
+      font-weight: 800;
+      font-size: 15px;
+      border: none;
+      margin-top: 8px;
+    }
+    
+    /* MESSAGE */
+    .login-page .login-msg {
+      margin-top: 18px;
+      color: #DC2626;
+      font-weight: 600;
+      text-align: center;
+    }
+    
+    /* RESPONSIVE */
+    @media (max-width: 768px) {
+      .login-page .login-container {
+        flex-direction: column;
+        min-height: 600px;
+      }
+      .login-page .login-left,
+      .login-page .login-right {
+        width: 100%;
+      }
+      .login-page .login-right {
+        padding: 30px 20px;
+      }
+    }
+    
+    /* ===== CAR BUBBLES ANIMATION ===== */
+    .car-bubbles {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none; 
+      overflow: hidden;
+      z-index: 0;
+    }
+    
+    .car-bubbles div {
+      position: absolute;
+      bottom: -50px; 
+      width: 201px;
+      height: 200px;
+      background-image: url('uploads/car_icon.png'); 
+      background-size: contain;
+      background-repeat: no-repeat;
+      opacity: 0;            
+      animation: rise 10s linear infinite;
+    }
+    
+    @keyframes riseRotate {
+      0% {
+        transform: translateY(0) scale(0.5) rotate(0deg);
+        opacity: 0;
+      }
+      10% {
+        opacity: 0.7;
+      }
+      100% {
+        transform: translateY(-110vh) scale(1) rotate(360deg);
+        opacity: 0;
+      }
+    }
+    
+    ")),
       tags$script(HTML("
       // Trigger login on Enter key
-      $(document).on('keypress', '.login-form input', function(e) {
-        if(e.which === 13) {  
+      $(document).on('keydown', '.login-form input', function(e) {
+        if(e.key === 'Enter') {
+          e.preventDefault(); // prevent default Enter behavior
           $('#login_btn').click();
         }
       });
 
       // Generate car bubbles animation
-$(document).ready(function(){
-  const container = $('.car-bubbles');
-  const bubbleCount = 40; // number of bubbles
-
-  for(let i = 0; i < bubbleCount; i++){
-    const car = $('<div></div>');
-    
-    const leftPos = Math.random() * 100;          // horizontal position
-    const startBottom = Math.random() * 100 - 50; // start at random height (-50 to 50px below container)
-    const duration = 8 + Math.random() * 5;       // animation duration
-    const size = 200 + Math.random() * 50;         // bubble size 80-130px
-    const delay = Math.random() * 5;              // animation delay
-
-    car.css({
-      left: leftPos + '%',
-      bottom: startBottom + 'px',
-      width: size + 'px',
-      height: size + 'px',
-      animationDuration: duration + 's',
-      animationDelay: delay + 's'
-    });
-
-    container.append(car);
-  }
-});
+      $(document).ready(function(){
+        const container = $('.car-bubbles');
+        const bubbleCount = 40; // number of bubbles
+      
+        for(let i = 0; i < bubbleCount; i++){
+          const car = $('<div></div>');
+          
+          const leftPos = Math.random() * 100;          
+          const startBottom = -50;                     
+          const duration = 8 + Math.random() * 5;       
+          const size = 200 + Math.random() * 50;         
+          const delay = Math.random() * 5;              
+      
+          const rotateDeg = Math.random() < 0.5 ? 360 : -360; 
+  
+          car.css({
+            left: leftPos + '%',
+            bottom: startBottom + 'px',
+            width: size + 'px',
+            height: size + 'px',
+            animationDuration: duration + 's',
+            animationDelay: delay + 's',
+            animationName: 'riseRotate'
+          });
+  
+      
+          container.append(car);
+        }
+      });
 
     "))
     ),
@@ -355,7 +360,7 @@ $(document).ready(function(){
           title = tagList(
             tags$div(
               style = "display: flex; align-items: center; margin-left: -15px;",
-              tags$img(src = "uploads/logo.png", height = "50px", style = "margin-right: 10px;"),
+              tags$img(src = "uploads/logo.png", height = "40px", style = "margin-right: 10px; margin-top:5px;"),
               span(uiOutput("page_title_ui"), style = "font-weight:700; font-size:22px; color:#334155;")
             )
           ),
@@ -392,20 +397,20 @@ $(document).ready(function(){
       @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
       
       body,
-    h1, h2, h3, h4, h5, h6,
-    .box,
-    .box-title,
-    .small-box,
-    .kpi-card,
-    .leaderboard-card,
-    .dataTable,
-    label,
-    input,
-    select,
-    textarea,
-    button {
-      font-family: 'Inter', sans-serif !important;
-    }
+      h1, h2, h3, h4, h5, h6,
+      .box,
+      .box-title,
+      .small-box,
+      .kpi-card,
+      .leaderboard-card,
+      .dataTable,
+      label,
+      input,
+      select,
+      textarea,
+      button {
+        font-family: 'Inter', sans-serif !important;
+      }
 
     /* ===== HEADER ===== */
     .skin-blue .main-header .logo {
@@ -422,6 +427,7 @@ $(document).ready(function(){
       background-color: #FCD34D !important;
     }
     
+    
     /* Hamburger */
     .sidebar-toggle {
       color: #1D4ED8 !important;  /* Blue color */
@@ -431,113 +437,105 @@ $(document).ready(function(){
     }
     
     .main-header .logo {
-  background-color: #FFFFFF !important;  /* white background */
-  color: #1E3A8A !important;            /* text/logo color */
-  font-weight: 700;
-}
-     /* ===== SIDEBAR FIX ===== */
+      background-color: #FFFFFF !important;  
+      color: #1E3A8A !important;            
+      font-weight: 700;
+    }
+    
+     /* ===== SIDEBAR ===== */
      
-     /* Make sidebar full height */
-.main-sidebar {
-    min-height: 100vh !important;  /* Full viewport height */
-    position: fixed;               /* Keep it fixed on scroll */
-    overflow-y: auto;              /* Scroll if content overflows */
-}
-
-/* Adjust main content so it doesn't go under sidebar */
-.content-wrapper {
-    margin-left: 230px; /* or the width of your sidebar */
-    min-height: 100vh;
-    background-color: #F9FAFB; /* optional page bg */
-}
-
-.main-sidebar,
-.main-sidebar .sidebar,
-.left-side {
-  background-color: #1E3A8A !important;
-}
-
-.sidebar-menu > li > a {
-  color: #E5E7EB !important;
-  font-weight: 600;
-}
-
-.sidebar-menu > li > a:hover {
-  background-color: #1D4ED8 !important;
-  color: #FFFFFF !important;
-}
-
-.sidebar-menu > li.active > a {
-  background-color: #1D4ED8 !important;
-  color: #FFFFFF !important;
-}
-
-.sidebar-menu > li > a > .fa,
-.sidebar-menu > li > a > .fas {
-  color: #E5E7EB !important;
-}
-
-.sidebar-menu > li.active > a > .fa,
-.sidebar-menu > li.active > a > .fas {
-  color: #FFFFFF !important;
-}
-
-/* Desktop */
-@media (min-width: 768px) {
-  /* Normal sidebar */
-  .content-wrapper,
-  .right-side {
-    margin-left: 230px;
-  }
-
-  /* FULL WIDTH when collapsed */
-  body.sidebar-collapse .content-wrapper,
-  body.sidebar-collapse .right-side {
-    margin-left: 0 !important;
-  }
-
-  /* Hide sidebar completely when collapsed */
-  body.sidebar-collapse .main-sidebar {
-    width: 0 !important;
-    overflow: hidden;
-  }
-}
-
-
-/* Mobile: sidebar slides over content automatically, remove left margin */
-@media (max-width: 767px) {
-  .content-wrapper,
-  .right-side {
-    margin-left: 0 !important;
-  }
-
-  /* Optional: fix small white gaps if any */
-  .main-sidebar,
-  .skin-blue .main-sidebar {
-    min-height: 100vh !important;
-  }
-  
-  .main-header .logo {
-    display: flex !important;
-    justify-content: center !important;  /* center horizontally */
-    align-items: center !important;      /* center vertically */
-    width: 100% !important;              /* take full width */
-    margin-left: 0 !important;           /* remove left margin */
-  }
-
-  /* Hide the text title on mobile if you want only logo */
-  .main-header .logo span {
-    display: none;
-  }
-
-  /* Optional: reduce logo size on mobile */
-  .main-header .logo img {
-    height: 40px !important;
-    width: auto !important;
-  }
-
-}
-
+    .main-sidebar {
+        min-height: 100vh !important;  
+        position: fixed;               /* Keep it fixed on scroll */
+        overflow-y: auto;              /* Scroll if content overflows */
+    }
+    
+    .content-wrapper {
+        margin-left: 230px; 
+        min-height: 100vh;
+        background-color: #F9FAFB; 
+    }
+    
+    .main-sidebar,
+    .main-sidebar .sidebar,
+    .left-side {
+      background-color: #1E3A8A !important;
+    }
+    
+    .sidebar-menu > li > a {
+      color: #E5E7EB !important;
+      font-weight: 600;
+    }
+    
+    .sidebar-menu > li > a:hover {
+      background-color: #1D4ED8 !important;
+      color: #FFFFFF !important;
+    }
+    
+    .sidebar-menu > li.active > a {
+      background-color: #1D4ED8 !important;
+      color: #FFFFFF !important;
+    }
+    
+    .sidebar-menu > li > a > .fa,
+    .sidebar-menu > li > a > .fas {
+      color: #E5E7EB !important;
+    }
+    
+    .sidebar-menu > li.active > a > .fa,
+    .sidebar-menu > li.active > a > .fas {
+      color: #FFFFFF !important;
+    }
+    
+    /* Desktop */
+    @media (min-width: 768px) {
+      /* Normal sidebar */
+      .content-wrapper,
+      .right-side {
+        margin-left: 230px;
+      }
+    
+      body.sidebar-collapse .content-wrapper,
+      body.sidebar-collapse .right-side {
+        margin-left: 0 !important;
+      }
+    
+      body.sidebar-collapse .main-sidebar {
+        width: 0 !important;
+        overflow: hidden;
+      }
+    }
+    
+    /* Mobile: sidebar slides over content automatically, remove left margin */
+    @media (max-width: 767px) {
+      .content-wrapper,
+      .right-side {
+        margin-left: 0 !important;
+      }
+    
+      .main-sidebar,
+      .skin-blue .main-sidebar {
+        min-height: 100vh !important;
+      }
+      
+      .main-header .logo {
+        display: flex !important;
+        justify-content: center !important;  
+        align-items: center !important;      
+        width: 100% !important;              
+        margin-left: 0 !important;           
+      }
+    
+      .main-header .logo span {
+        display: none;
+      }
+    
+      .main-header .logo img {
+        height: 40px !important;
+        width: auto !important;
+      }
+    
+    }
 
 
     /* ===== SIDEBAR USER PANEL ===== */
@@ -602,7 +600,6 @@ $(document).ready(function(){
       box-shadow: 0 8px 24px rgba(0,0,0,0.05);
     }
     
-    /* ===== VALUE BOXES ===== */
     .small-box {
       border-radius: 14px !important;
       box-shadow: 0 8px 24px rgba(0,0,0,0.06);
@@ -689,7 +686,7 @@ $(document).ready(function(){
       margin-bottom: 24px;
     }
     
-    /* ===== LEADERBOARD (NO PINK) ===== */
+    /* ===== LEADERBOARD  ===== */
     .leaderboard-card {
       background: #FFFFFF;
       border-radius: 14px;
@@ -718,99 +715,98 @@ $(document).ready(function(){
       margin-bottom: 8px;
       background: #F8FAFC;
     }
-/* Stars */
-.gold-star { color: #FFD700; }  /* filled yellow */
-.blue-star { color: #D1D5DB; }  /* empty blue */
-
-/* Medals */
-.gold-medal { color: #FFD700; }
-.silver-medal { color: #C0C0C0; }
-.bronze-medal { color: #CD7F32; }
-
-/* Leaderboard row */
-.leaderboard-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 8px 12px;
-  border-radius: 10px;
-  margin-bottom: 8px;
-  background: #F8FAFC;
-}
-
-.lb-name {
-  font-weight: 700;
-  margin-left: 8px;
-}
-
-.lb-count {
-  background: #E0E7FF;
-  color: #1E3A8A;
-  font-weight: 800;
-  padding: 4px 10px;
-  border-radius: 999px;
-  min-width: 42px;
-  text-align: center;
-}
-
-/* ===== Leaderboard avatar / icon ===== */
-
-/* ===== Medal / Rank alignment fix ===== */
-.lb-rank {
-  width: 28px;              /* fixed width */
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  font-weight: 700;
-  font-size: 16px;
-  margin-right: 6px;
-}
-
-.lb-avatar {
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
-  background: #E0E7FF;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #1E3A8A;
-  font-size: 16px;
-  margin-right: 10px;
-  flex-shrink: 0;
-  margin-left: 10px;
-}
-
-/* Left side group */
-.lb-left {
-  display: flex;
-  align-items: center;
-}
-
-/* ===== Name + stars layout ===== */
-.lb-info {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-/* Stars inline on desktop */
-.lb-stars {
-  margin-top: 0;
-}
-
-/* ===== Mobile behavior ===== */
-@media (max-width: 768px) {
-  .lb-info {
-    flex-direction: column;     /* stack */
-    align-items: flex-start;
-    gap: 2px;
-  }
-
-  .lb-stars {
-    margin-top: 2px;            /* small spacing under name */
-  }
-}
+    
+    /* Stars */
+    .gold-star { color: #FFD700; }  /* filled yellow */
+    .blue-star { color: #D1D5DB; }  /* empty blue */
+    
+    /* Medals */
+    .gold-medal { color: #FFD700; }
+    .silver-medal { color: #C0C0C0; }
+    .bronze-medal { color: #CD7F32; }
+    
+    /* Leaderboard row */
+    .leaderboard-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 8px 12px;
+      border-radius: 10px;
+      margin-bottom: 8px;
+      background: #F8FAFC;
+    }
+    
+    .lb-name {
+      font-weight: 700;
+      margin-left: 8px;
+    }
+    
+    .lb-count {
+      background: #E0E7FF;
+      color: #1E3A8A;
+      font-weight: 800;
+      padding: 4px 10px;
+      border-radius: 999px;
+      min-width: 42px;
+      text-align: center;
+    }
+    
+    /* ===== Medal / Rank alignment fix ===== */
+    .lb-rank {
+      width: 28px;              
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-weight: 700;
+      font-size: 16px;
+      margin-right: 6px;
+    }
+    
+    .lb-avatar {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: #E0E7FF;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #1E3A8A;
+      font-size: 16px;
+      margin-right: 10px;
+      flex-shrink: 0;
+      margin-left: 10px;
+    }
+    
+    /* Left side group */
+    .lb-left {
+      display: flex;
+      align-items: center;
+    }
+    
+    /* ===== Name + stars layout ===== */
+    .lb-info {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    
+    /* Stars inline on desktop */
+    .lb-stars {
+      margin-top: 0;
+    }
+    
+    /* ===== Mobile behavior ===== */
+    @media (max-width: 768px) {
+      .lb-info {
+        flex-direction: column;     /* stack */
+        align-items: flex-start;
+        gap: 2px;
+      }
+    
+      .lb-stars {
+        margin-top: 2px;            /* small spacing under name */
+      }
+    }
 
     .stat-item {
       display: flex;
@@ -833,8 +829,6 @@ $(document).ready(function(){
       font-size: 12px;
     }
 
-
-    
     /* ===== DATATABLE ===== */
     table.dataTable {
       border-collapse: separate !important;
@@ -860,12 +854,10 @@ $(document).ready(function(){
       color: #1F2937;
     }
     
-    /* Hover */
     table.dataTable tbody tr:hover {
       background: #F1F5F9;
     }
     
-    /* Pagination */
     .dataTables_wrapper .dataTables_paginate .paginate_button {
       border-radius: 8px !important;
       border: none !important;
@@ -892,7 +884,6 @@ $(document).ready(function(){
       outline: none !important;
     }
     
-    /* Labels */
     label {
       font-size: 12px;
       font-weight: 700;
@@ -901,8 +892,6 @@ $(document).ready(function(){
       letter-spacing: 0.5px;
     }
 
-
-    
     /* ===== TEXT / ACTION BUTTONS ===== */
     .btn {
       border-radius: 10px;
@@ -927,70 +916,69 @@ $(document).ready(function(){
     }
       
       .cars-container {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-    gap: 15px;
-  }
-  .car-card {
-    border:1px solid #ddd; 
-    border-radius:8px; 
-    padding:10px; 
-    text-align:center; 
-    cursor:pointer;
-    transition: all 0.2s;
-    background-color: #fff;
-  }
-  .car-card:hover {
-    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
-  }
-  .car-card img {
-    width:100%; 
-    height:120px; 
-    object-fit:cover; 
-    border-radius:6px;
-  }
-  
-  .car-card.selected {
-    border: 2px solid #007bff;
-    box-shadow: 0 4px 12px rgba(0, 123, 255, 0.4);
-  }
-  
-  /* ===== Car Cards Text Colors ===== */
-.car-card h4 {
-  color: #FACC15;        /* yellow */
-  font-weight: 800;
-  font-size: 16px;
-  margin-top: 8px;
-  margin-bottom: 6px;
-}
-
-.car-card p {
-  color: #1E3A8A;        /* darker blue */
-  font-size: 13px;
-  margin: 2px 0;
-  font-weight: 600;
-}
-
-/* Hover effect */
-.car-card:hover h4 {
-  color: #EAB308;        /* darker yellow on hover */
-}
-
-  
-  /* ===== Cars Pagination Buttons ===== */
-#next_page,
-#prev_page {
-  background-color: #1D4ED8 !important;  /* blue */
-  color: #FFFFFF !important;
-  border: none !important;
-  font-weight: 700;
-}
-
-#next_page:hover,
-#prev_page:hover {
-  background-color: #1E40AF !important;  /* darker blue */
-  color: #FFFFFF !important;
-}
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+        gap: 15px;
+      }
+      .car-card {
+        border:1px solid #ddd; 
+        border-radius:8px; 
+        padding:10px; 
+        text-align:center; 
+        cursor:pointer;
+        transition: all 0.2s;
+        background-color: #fff;
+      }
+      .car-card:hover {
+        box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+      }
+      .car-card img {
+        width:100%; 
+        height:120px; 
+        object-fit:cover; 
+        border-radius:6px;
+      }
+      
+      .car-card.selected {
+        border: 2px solid #007bff;
+        box-shadow: 0 4px 12px rgba(0, 123, 255, 0.4);
+      }
+      
+      .car-card h4 {
+        color: #FACC15;        
+        font-weight: 800;
+        font-size: 16px;
+        margin-top: 8px;
+        margin-bottom: 6px;
+      }
+      
+      .car-card p {
+        color: #1E3A8A;        /* darker blue */
+        font-size: 13px;
+        margin: 2px 0;
+        font-weight: 600;
+      }
+      
+      /* Hover effect */
+      .car-card:hover h4 {
+        color: #EAB308;        /* darker yellow on hover */
+      }
+      
+        
+        /* ===== Cars Pagination Buttons ===== */
+      #next_page,
+      #prev_page {
+        background-color: #1D4ED8 !important;  /* blue */
+        color: #FFFFFF !important;
+        border: none !important;
+        font-weight: 700;
+      }
+      
+      #next_page:hover,
+      #prev_page:hover {
+        background-color: #1E40AF !important;  
+        color: #FFFFFF !important;
+      }
 
       
       .available { background:#DCFCE7; color:#166534; }
@@ -998,9 +986,9 @@ $(document).ready(function(){
       .maintenance { background:#FEF3C7; color:#92400E; }
       
       .ongoing { background:#DBEAFE; color:#1D4ED8; }
-      .reserved { background:#FDE68A; color:#92400E; }   /* new reserved status */
+      .reserved { background:#FDE68A; color:#92400E; }   
       .ended { background:#E5E7EB; color:#374151; }
-              "))
+    "))
           ),
           tabItems(
             tabItem(tabName = "dashboard",
@@ -1458,9 +1446,7 @@ $(document).ready(function(){
   })
   
   
-  
-  
-  # ---------------- Cars table ----------------
+  # ---------------- Cars Cards ----------------
   filtered_cars <- reactive({
     df <- cars_data()
     
@@ -1541,31 +1527,6 @@ $(document).ready(function(){
   # Store cars data
   cars_data <- reactiveVal(safe_query("SELECT * FROM Cars ORDER BY car_id ASC"))
   
-  # Render Cars table
-  output$cars_table <- renderDT({
-    df <- cars_data() %>%
-      select(-updated_at) %>%
-      mutate(
-        car_id = sprintf("CAR-%03d", car_id),
-        price_per_day = paste0("₱", format(price_per_day, big.mark = ",", nsmall = 2)),
-        status = status_pill(status)
-      )
-    
-    datatable(
-      df,
-      selection = "single",
-      rownames = FALSE,
-      colnames = c(
-        "Car ID", "Brand", "Model", "Year", "Type", "Price per Day", "Status"
-      ),
-      extensions = "Responsive",   # <- enable responsive extension
-      options = list(scrollX = TRUE, responsive = TRUE),
-      escape = FALSE
-    )
-  })
-  
-  
-  
   # Selected car row
   selected_car_row <- reactive({
     car_id <- input$selected_car_id
@@ -1601,7 +1562,6 @@ $(document).ready(function(){
       )
     })
     
-    # Wrap cards in a responsive grid container, include JS script inside the returned tagList
     tagList(
       tags$div(class = "cars-container", do.call(tagList, cards)),
       tags$script(HTML("
@@ -1612,7 +1572,6 @@ $(document).ready(function(){
     "))
     )
   })
-  
   
   
   # Fill form when car selected
@@ -1627,8 +1586,6 @@ $(document).ready(function(){
     updateNumericInput(session, "car_price", value = row$price_per_day)
     updateSelectInput(session, "car_status", selected = row$status)
   }, ignoreNULL = TRUE)
-  
-  
   
   
   # ---------------- CAR CRUD ----------------
@@ -1652,7 +1609,6 @@ $(document).ready(function(){
     })    
     session$sendCustomMessage("clear_selected_car", TRUE)
   }
-  
   
   # JS handler to clear selected_car_id
   tags$script(HTML("
@@ -1687,7 +1643,7 @@ $(document).ready(function(){
     img_db <- if (!is.null(input$car_image)) {
       DBI::dbQuoteString(con, paste0("car_images/", img_name))
     } else {
-      "NULL"  # no quotes around it in SQL
+      "NULL"  
     }
     
     q <- paste0(
@@ -1781,7 +1737,6 @@ $(document).ready(function(){
     available_cars <- df_cars %>%
       filter(!(car_id %in% booked_cars$car_id))
     
-    # ✅ INCLUDE CURRENT BOOKING CAR
     if (editing_booking() && !is.null(selected_booking_car())) {
       selected_car <- df_cars %>%
         filter(car_id == selected_booking_car())
@@ -1803,10 +1758,10 @@ $(document).ready(function(){
         paste(available_cars$brand, available_cars$model)
       )
       div(
-        tags$label(HTML("Select Car <span style='color:red;'>*</span>")),  # red asterisk
+        tags$label(HTML("Select Car <span style='color:red;'>*</span>")),  
       selectInput(
         "selected_car_for_booking",
-        label = NULL,  # label handled above
+        label = NULL,  
         choices = choices,
         selected = as.character(selected_booking_car())
       )
@@ -1822,14 +1777,12 @@ $(document).ready(function(){
     )
   })
   
-  
-  # Booking Status dropdown with red asterisk
   output$booking_status_ui <- renderUI({
     div(
       tags$label(HTML("Booking Status <span style='color:red;'>*</span>")),
       selectInput(
         "booking_status", 
-        label = NULL,  # label handled above
+        label = NULL,  
         choices = c(
           "Select Booking Status" = "",
           "reserved",
@@ -1841,19 +1794,17 @@ $(document).ready(function(){
     )
   })
   
-  # Car Status dropdown with red asterisk
   output$car_status_ui <- renderUI({
     div(
       tags$label(HTML("Car Status <span style='color:red;'>*</span>")),
       selectInput(
         "car_status", 
-        label = NULL,  # label handled above
+        label = NULL,  
         choices = c("Select Car Status" = "", "available", "rented", "maintenance"),
         selected = ""
       )
     )
   })
-  
   
   observeEvent(input$selected_car_for_booking, {
     req(input$selected_car_for_booking)
@@ -1909,10 +1860,8 @@ $(document).ready(function(){
     
     editing_booking(TRUE)
     
-    # 🔒 Store selected car FIRST
     selected_booking_car(as.integer(row$car_id))
     
-    # Update dates ONLY
     updateDateInput(session, "start_date", value = as.Date(row$start_date))
     updateDateInput(session, "end_date", value = as.Date(row$end_date))
     
@@ -1937,11 +1886,8 @@ $(document).ready(function(){
     updateNumericInput(session, "total_amount", value = row$total_amount)
   })
   
-  
-  
   # ---------------- Booking CRUD ----------------
   
-  # Function to reset booking fields
   reset_booking_fields <- function(session) {
     updateTextInput(session, "cust_name", value = "")
     updateTextInput(session, "cust_contact", value = "")
@@ -2042,7 +1988,7 @@ $(document).ready(function(){
     today <- Sys.Date()
     today_sql <- DBI::dbQuoteString(con, as.character(today))
     
-    # Reset cars (except maintenance)
+    # Reset cars
     dbExecute(con, "UPDATE Cars SET status = 'available' WHERE status != 'maintenance'")
     
     # Set rented only if booking is active today
@@ -2054,8 +2000,6 @@ $(document).ready(function(){
        AND ", today_sql, " BETWEEN b.start_date AND b.end_date"
     ))
   }
-  
-  
   
   observeEvent(input$update_booking_btn, {
     row <- selected_booking_row()
