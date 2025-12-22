@@ -92,8 +92,6 @@ server <- function(input, output, session) {
   # ---- Reactive login state ----
   user_logged_in <- reactiveVal(FALSE)
   current_user <- reactiveVal(NULL)
-  cars_per_page <- 8
-  current_page <- reactiveVal(1)
   
   # ---- LOGIN PAGE ----
   login_page <- fluidPage(
@@ -1025,11 +1023,73 @@ $(document).on('click', '.toggle-password', function () {
       display: inline-block;
     }
       
-      .cars-container {
+      /* Cars grid: default smaller screens */
+    .cars-container {
         display: grid;
         grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-        gap: 15px;
-      }
+        gap: 20px;
+    }
+    
+    /* Desktop: 5 cards per row */
+    @media (min-width: 1200px) {
+        .cars-container {
+            grid-template-columns: repeat(5, 1fr);
+        }
+    
+        .car-card {
+            padding: 20px;
+            height: 320px; 
+        }
+    
+        .car-card img {
+            height: 160px; 
+        }
+    
+        .car-card h4 {
+            font-size: 18px;
+        }
+    
+        .car-card p {
+            font-size: 14px;
+        }
+    
+        .car-card {
+            gap: 8px; 
+        }
+    }
+    
+    /* Tablets: 3 cards per row */
+    @media (min-width: 768px) and (max-width: 1199px) {
+        .cars-container {
+            grid-template-columns: repeat(3, 1fr);
+        }
+    
+        .car-card {
+            height: 300px;
+            padding: 15px;
+        }
+    
+        .car-card img {
+            height: 140px;
+        }
+    }
+    
+    /* Mobile: 1 card per row */
+    @media (max-width: 767px) {
+        .cars-container {
+            grid-template-columns: repeat(1, 1fr);
+        }
+    
+        .car-card {
+            height: auto;
+            padding: 12px;
+        }
+    
+        .car-card img {
+            height: 120px;
+        }
+    }
+
       .car-card {
         border:1px solid #ddd; 
         border-radius:8px; 
@@ -1048,11 +1108,7 @@ $(document).on('click', '.toggle-password', function () {
         object-fit:cover; 
         border-radius:6px;
       }
-      
-      .car-card.selected {
-        border: 2px solid #007bff;
-        box-shadow: 0 4px 12px rgba(0, 123, 255, 0.4);
-      }
+
       
       .car-card h4 {
         color: #FACC15;        
@@ -1063,7 +1119,7 @@ $(document).on('click', '.toggle-password', function () {
       }
       
       .car-card p {
-        color: #1E3A8A;        /* darker blue */
+        color: #1E3A8A;        
         font-size: 13px;
         margin: 2px 0;
         font-weight: 600;
@@ -1071,23 +1127,7 @@ $(document).on('click', '.toggle-password', function () {
       
       /* Hover effect */
       .car-card:hover h4 {
-        color: #EAB308;        /* darker yellow on hover */
-      }
-      
-        
-        /* ===== Cars Pagination Buttons ===== */
-      #next_page,
-      #prev_page {
-        background-color: #1D4ED8 !important;  /* blue */
-        color: #FFFFFF !important;
-        border: none !important;
-        font-weight: 700;
-      }
-      
-      #next_page:hover,
-      #prev_page:hover {
-        background-color: #1E40AF !important;  
-        color: #FFFFFF !important;
+        color: #EAB308;     
       }
 
       
@@ -1098,6 +1138,170 @@ $(document).on('click', '.toggle-password', function () {
       .ongoing { background:#DBEAFE; color:#1D4ED8; }
       .reserved { background:#FDE68A; color:#92400E; }   
       .ended { background:#E5E7EB; color:#374151; }
+      
+
+      .modal-body .form-group {
+        margin-bottom: 12px;
+      }
+      
+      /* Rounded modal */
+      .modal-content {
+        border-radius: 12px; 
+        overflow: hidden;    
+      }
+      
+      
+      .modal-body input,
+      .modal-body select {
+        width: 100%;
+      }
+      
+      .modal-header {
+        background: #1D4ED8;
+        color: #fff;
+      }
+      
+      .modal-title {
+        font-weight: 600;
+      }
+      
+      
+      .btn-file {
+          color: #fff !important;       
+          background-color: #1D4ED8; !important;
+          border-color: #0056b3 !important;
+        }
+      /* Optional: hover effect */
+      .btn-file:hover {
+          background-color: #007bff !important; 
+          border-color: #007bff !important;    
+      }
+          
+      /* Save button - darker blue */
+      .btn-modal-save {
+        background-color: #1D4ED8;  
+        border-color: #1D4ED8;
+        color: #ffffff;
+        font-weight: 500;
+        padding: 6px 20px;
+        border-radius: 6px;
+      }
+      
+      .btn-modal-save:hover,
+      .btn-modal-save:focus {
+        background-color: #1E40AF;  
+        border-color: #1E40AF;
+        color: #ffffff;
+      }
+      
+      /* Cancel button */
+      .btn-modal-cancel {
+        background-color: #E5E7EB;  
+        border: none;               
+        color: #374151;             
+        font-weight: 500;
+        padding: 6px 15px;
+        border-radius: 6px;         
+        margin-right: 5px;
+        box-shadow: none;            
+      }
+      
+      .btn-modal-cancel:hover,
+      .btn-modal-cancel:focus {
+        background-color: #D1D5DB;  
+        color: #111827;
+        cursor: pointer;
+        box-shadow: none;            
+      }
+      
+      /* Base style for all notifications */
+      .shiny-notification {
+        position: fixed !important;
+        top: 20px;
+        right: 20px; /* final position */
+        width: 300px;
+        padding: 12px 16px;
+        border-radius: 10px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        font-size: 14px;
+        z-index: 1050;
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+      
+        transform: translateX(400px);
+        opacity: 0;
+        animation: slideIn 0.5s forwards;
+      }
+      
+      /* Success style */
+      .shiny-notification-message {
+        background-color: #4CAF50;
+        color: white;
+      }
+      
+      /* Error style */
+      .shiny-notification-error {
+        background-color: #f44336;
+        color: white;
+      }
+      
+      /* Icon spacing */
+      .shiny-notification .fa {
+        margin-right: 6px;
+      }
+      
+      /* Slide-in animation */
+      @keyframes slideIn {
+        0% {
+          transform: translateX(400px);
+          opacity: 0;
+        }
+        100% {
+          transform: translateX(0);
+          opacity: 1;
+        }
+      }
+      
+      /* Slide-out animation */
+      .shiny-notification.fade-out {
+        animation: slideOut 0.5s forwards;
+      }
+      
+      @keyframes slideOut {
+        0% {
+          transform: translateX(0);
+          opacity: 1;
+        }
+        100% {
+          transform: translateX(400px);
+          opacity: 0;
+        }
+      }
+      
+      /* Loading/progress line */
+      .shiny-notification::after {
+        content: '';
+        display: block;
+        margin-top: 6px;
+        height: 4px;
+        width: 100%;
+        background-color: rgba(255,255,255,0.7); /* light line for visibility */
+        border-radius: 2px;
+        animation: progressBar linear forwards;
+        animation-duration: 4s; /* duration matches notification lifetime */
+      }
+      
+      @keyframes progressBar {
+        0% {
+          width: 100%;
+        }
+        100% {
+          width: 0%;
+        }
+      }
+
+
     "))
           ),
           tabItems(
@@ -1139,97 +1343,118 @@ $(document).on('click', '.toggle-password', function () {
                       )
                     )
             ),
-            tabItem(tabName = "cars",
-                    uiOutput("tab_title_cars"),
-                    fluidRow(
-                      box(width = 4, title = "Add / Update Car", solidHeader = TRUE, status = "primary",
-                          textInput("car_brand", HTML("Brand <span style='color:red;'>*</span>"), placeholder = "Enter car brand"),
-                          textInput("car_model", HTML("Model <span style='color:red;'>*</span>"), placeholder = "Enter car model"),
-                          numericInput("car_year", HTML("Year <span style='color:red;'>*</span>"), value = year(Sys.Date()), min = 1900, max = 2100),
-                          textInput("car_type", HTML("Type <span style='color:red;'>*</span>"), placeholder = "Enter car type"),
-                          numericInput("car_price", HTML("Price Per Day <span style='color:red;'>*</span>"), value = NA, min = 0, step = 100),
-                          uiOutput("car_status_ui"),
-                          uiOutput("car_image_ui"),
-                          
-                          actionButton("add_car_btn", " Add Car", icon = icon("plus"), class = "btn-success"),
-                          actionButton("update_car_btn", " Update Car", icon = icon("edit"), class = "btn-primary"),
-                          actionButton("delete_car_btn", " Delete Car", icon = icon("trash"), class = "btn-danger"),
-                          br(), br(),
-                          helpText("Select a row on the table to populate fields for update/delete.")
-                      ),
-                      box(width = 8, title = "Cars", solidHeader = TRUE, status = "primary",
-                          fluidRow(
-                            column(6,
-                                   textInput("car_search", NULL, placeholder = "Search brand, model, type...")
-                            ),
-                            column(6,
-                                   actionButton("search_car_btn", "Search", icon = icon("search"),
-                                                class = "btn-primary", width = "100%")
-                            )
-                          ),
-                          br(),
-                          
-                          uiOutput("cars_cards"),
-                          
-                          br(),
-                          fluidRow(
-                            column(4,
-                                   actionButton("prev_page", "Previous", icon = icon("chevron-left"),
-                                                class = "btn-default", width = "100%")
-                            ),
-                            column(4,
-                                   div(style = "text-align:center; padding-top:8px;",
-                                       textOutput("page_info"))
-                            ),
-                            column(4,
-                                   actionButton("next_page", "Next", icon = icon("chevron-right"),
-                                                class = "btn-default", width = "100%")
-                            )
-                          ),
-                          # JS for selecting car card
-                          tags$script(HTML("
-                         $(document).on('click', '.car-card', function() {
-                           // Remove selection from other cards
-                           $('.car-card').removeClass('selected');
-                           // Add selection to clicked card
-                           $(this).addClass('selected');
-                           // Send car_id to Shiny
-                           var carId = $(this).data('car-id');
-                           Shiny.setInputValue('selected_car_id', carId, {priority: 'event'});
-                         });
-                       "))
+            tabItem(
+              tabName = "cars",
+              
+              uiOutput("tab_title_cars"),
+              
+              fluidRow(
+                style = "margin-bottom: 15px;",
+                
+                # Status Filter
+                div(class = "col-md-3 col-sm-12 col-xs-12",
+                    div(
+                      style = "display: flex; flex-direction: column; justify-content: center; margin-bottom: 8px;",
+                      selectInput(
+                        "filter_status",
+                        label = NULL,  # remove label to match search height
+                        choices = c("All", "Available", "Rented", "Maintenance"),
+                        selected = "All",
+                        width = "100%"
                       )
                     )
+                ),
+                
+                # Search Box 
+                div(class = "col-md-6 col-sm-12 col-xs-12",
+                    div(
+                      style = "position: relative; display: flex; flex-direction: column; justify-content: center; margin-bottom: 8px;",
+                      
+                      # Text input
+                      textInput(
+                        "car_search",
+                        NULL,
+                        placeholder = "Search brand, model, type...",
+                        width = "100%"
+                      ),
+                      
+                      # Search icon
+                      tags$i(class = "fa fa-search", 
+                             style = "position: absolute; right: 10px; top: 40%; transform: translateY(-50%); color: #999;")
+                    )
+                ),
+                
+                
+                # Add Button
+                div(class = "col-md-3 col-sm-12 col-xs-12",
+                    div(
+                      style = "display: flex; justify-content: flex-end; align-items: center; margin-bottom: 8px;",
+                      actionButton(
+                        "open_add_car_modal",
+                        "Add New Car",
+                        icon = icon("plus"),
+                        class = "btn-primary",
+                        width = "100%"  
+                      )
+                    )
+                )
+              ),
+              
+              
+              br(),
+              
+              uiOutput("cars_cards"),
+              
+              br(),
+            
             ),
+          
             tabItem(tabName = "booking",
                     uiOutput("tab_title_booking"),
                     fluidRow(
                       box(width = 5, title = "Create / Manage Booking", solidHeader = TRUE, status = "primary",
-                          fluidRow(
-                            column(6,
-                                   textInput("cust_name", HTML("Customer Name <span style='color:red;'>*</span>"), placeholder = "Enter customer full name", width = "100%"),
-                                   textInput("cust_email", HTML("Email <span style='color:red;'>*</span>"), placeholder = "Enter email", width = "100%"),
-                                   dateInput("end_date", HTML("End Date <span style='color:red;'>*</span>"), value = Sys.Date() + 1, width = "100%"),
-                                   numericInput("car_price_day", HTML("Price per day <span style='color:red;'>*</span>"), value = 0, min = 0, step = 1, width = "100%"),
-                                   uiOutput("booking_status_ui")
-                            ),
-                            column(6,
-                                   textInput("cust_contact", HTML("Contact <span style='color:red;'>*</span>"), placeholder = "Enter contact number", width = "100%"),
-                                   dateInput("start_date", HTML("Start Date <span style='color:red;'>*</span>"), value = Sys.Date(), width = "100%"),
-                                   uiOutput("car_select_ui"),  # the dropdown for selecting available car
-                                   numericInput("total_amount", HTML("Total Amount <span style='color:red;'>*</span>"), value = 0, min = 0, step = 1, width = "100%")
-                            )
+                          tags$div(
+                            style = "
+                            display: grid;
+                            grid-template-columns: 1fr 1fr; 
+                            gap: 5px;  /* smaller gap between fields */
+                          ",
+                            # Row 1
+                            textInput("cust_name", HTML("Customer Name <span style='color:red;'>*</span>"), placeholder = "Enter customer full name", width = "100%"),
+                            textInput("cust_contact", HTML("Contact <span style='color:red;'>*</span>"), placeholder = "Enter contact number", width = "100%"),
+                            
+                            # Row 2
+                            textInput("cust_email", HTML("Email <span style='color:red;'>*</span>"), placeholder = "Enter email", width = "100%"),
+                            dateInput("start_date", HTML("Start Date <span style='color:red;'>*</span>"), value = Sys.Date(), width = "100%"),
+                            
+                            # Row 3
+                            dateInput("end_date", HTML("End Date <span style='color:red;'>*</span>"), value = Sys.Date() + 1, width = "100%"),
+                            uiOutput("car_select_ui"),
+                            
+                            # Row 4
+                            numericInput("car_price_day", HTML("Price per day <span style='color:red;'>*</span>"), value = 0, min = 0, step = 1, width = "100%"),
+                            numericInput("total_amount", HTML("Total Amount <span style='color:red;'>*</span>"), value = 0, min = 0, step = 1, width = "100%"),
+                            
+                            # Row 5 - full width for status
+                            tags$div(style = "grid-column: 1 / span 2;", uiOutput("booking_status_ui"))
                           ),
-                          actionButton("book_btn", "Confirm Booking", icon = icon("check"), class = "btn-success"),
-                          actionButton("update_booking_btn", "Update Booking", icon = icon("edit"), class = "btn-primary"),
-                          actionButton("delete_booking_btn", "Delete Booking", icon = icon("trash"), class = "btn-danger"),
-                          br(), br(),
+                          
+                          # Action buttons 
+                          tags$div(
+                            style = "display: flex; gap: 10px; flex-wrap: wrap; margin-top: 10px;",
+                            actionButton("book_btn", "Confirm Booking", icon = icon("check"), class = "btn-success"),
+                            actionButton("update_booking_btn", "Update Booking", icon = icon("edit"), class = "btn-primary"),
+                            actionButton("delete_booking_btn", "Delete Booking", icon = icon("trash"), class = "btn-danger")
+                          ),
+                          
+                          br(),
                           helpText("Select a row on the table to populate fields for update/delete.")
                       ),
                       box(width = 7, title = "Rental History", solidHeader = TRUE, status = "primary",
                           DTOutput("booking_table"))
                     )
             ),
+            
             tabItem(tabName = "customers",
                     uiOutput("tab_title_customers"),
                     fluidRow(
@@ -1287,7 +1512,7 @@ $(document).on('click', '.toggle-password', function () {
     poll_interval_ms, session,
     checkFunc = function() {
       r <- safe_query("SELECT MAX(updated_at) AS last FROM Customers")
-      as.character(r$last)  # This changes whenever a row is updated
+      as.character(r$last)  
     },
     valueFunc = function() {
       safe_query("SELECT * FROM Customers ORDER BY customer_id ASC")
@@ -1432,11 +1657,11 @@ $(document).on('click', '.toggle-password', function () {
       type = "scatter",
       mode = "lines+markers",
       line = list(
-        color = "#FACC15",   # yellow line
+        color = "#FACC15",   
         width = 3
       ),
-      fill = "tozeroy",      # 🔥 fills under the line
-      fillcolor = "rgba(250, 204, 21, 0.35)",  # yellow w/ transparency
+      fill = "tozeroy",      
+      fillcolor = "rgba(250, 204, 21, 0.35)",  
       text = ~format(month, "%B"),
       hovertemplate = "%{text}<br>Revenue: ₱%{y:,.2f}<extra></extra>"
     ) %>%
@@ -1447,7 +1672,7 @@ $(document).on('click', '.toggle-password', function () {
           title = "Month",
           gridcolor = "#E5E7EB",
           tickformat = "%b",
-          dtick = "M1"  # 1 tick per month
+          dtick = "M1"  
         ),
         yaxis = list(title = "Revenue", gridcolor = "#E5E7EB"),
         font  = list(color = "#1E3A8A")
@@ -1470,7 +1695,7 @@ $(document).on('click', '.toggle-password', function () {
       ) %>%
       left_join(cars, by = "car_id") %>%
       mutate(car_name = paste(brand, model)) %>%
-      arrange(desc(rent_count), desc(total_amount)) %>%  # <-- break ties by total_amount
+      arrange(desc(rent_count), desc(total_amount)) %>%  
       slice_head(n = 5)
     
     max_stars <- 5
@@ -1519,7 +1744,7 @@ $(document).on('click', '.toggle-password', function () {
         total_amount = sum(total_amount, na.rm = TRUE)
       ) %>%
       left_join(cust, by = "customer_id") %>%
-      arrange(desc(booking_count), desc(total_amount)) %>%  # <-- break ties by total_amount
+      arrange(desc(booking_count), desc(total_amount)) %>%  
       slice_head(n = 5)
     
     max_stars <- 5
@@ -1557,70 +1782,27 @@ $(document).on('click', '.toggle-password', function () {
   
   
   # ---------------- Cars Cards ----------------
+  
   filtered_cars <- reactive({
-    df <- cars_data()
+    df <- cars_df()
     
-    if (is.null(input$car_search) || input$car_search == "") {
-      return(df)
-    }
-    
-    key <- tolower(input$car_search)
-    
-    df %>%
-      filter(
+    # 🔍 SEARCH
+    if (!is.null(input$car_search) && input$car_search != "") {
+      key <- tolower(input$car_search)
+      df <- df %>% filter(
         grepl(key, tolower(brand)) |
           grepl(key, tolower(model)) |
           grepl(key, tolower(type)) |
           grepl(key, as.character(year))
       )
-  })
-  
-  observeEvent(input$search_car_btn, {
-    current_page(1)
-  })
-  
-  paged_cars <- reactive({
-    df <- filtered_cars()
+    }
     
-    start <- (current_page() - 1) * cars_per_page + 1
-    end   <- min(start + cars_per_page - 1, nrow(df))
+    # STATUS FILTER
+    if (input$filter_status != "All") {
+      df <- df %>% filter(tolower(status) == tolower(input$filter_status))
+    }
     
-    if (nrow(df) == 0) return(df)
-    df[start:end, ]
-  })
-  
-  observeEvent(input$next_page, {
-    max_page <- ceiling(nrow(filtered_cars()) / cars_per_page)
-    if (current_page() < max_page) {
-      current_page(current_page() + 1)
-    }
-  })
-  
-  observeEvent(input$prev_page, {
-    if (current_page() > 1) {
-      current_page(current_page() - 1)
-    }
-  })
-  
-  observeEvent(input$next_page, {
-    max_page <- ceiling(nrow(filtered_cars()) / cars_per_page)
-    if (current_page() < max_page) {
-      current_page(current_page() + 1)
-    }
-  })
-  
-  observeEvent(input$prev_page, {
-    if (current_page() > 1) {
-      current_page(current_page() - 1)
-    }
-  })
-  
-  output$page_info <- renderText({
-    total <- nrow(filtered_cars())
-    if (total == 0) return("No results")
-    
-    max_page <- ceiling(total / cars_per_page)
-    paste("Page", current_page(), "of", max_page)
+    df
   })
   
   
@@ -1637,197 +1819,339 @@ $(document).on('click', '.toggle-password', function () {
   # Store cars data
   cars_data <- reactiveVal(safe_query("SELECT * FROM Cars ORDER BY car_id ASC"))
   
-  # Selected car row
-  selected_car_row <- reactive({
-    car_id <- input$selected_car_id
-    if (is.null(car_id)) return(NULL)
-    df <- cars_data()
-    df[df$car_id == car_id, , drop = FALSE]
+  
+  carModalUI <- function(title) {
+    modalDialog(
+      title = tags$div(
+        icon("car"),
+        span(title, style = "margin-left:8px;")
+      ),
+      size = "s",   
+      easyClose = TRUE,
+      footer = tagList(
+        # Cancel button 
+        tags$button(
+          type = "button",
+          class = "btn-modal-cancel",
+          `data-dismiss` = "modal",  
+          "Cancel"
+        ),
+        
+        # Save button
+        actionButton(
+          "save_car_btn",
+          "Save Car",
+          icon = icon("save"),
+          class = "btn-modal-save"
+        )
+      ),
+      fluidRow(
+        column(
+          12,
+          textInput("car_brand", HTML("Brand <span style='color:red;'>*</span>"), placeholder = "e.g. Toyota", width = "100%"),
+          textInput("car_model", HTML("Model <span style='color:red;'>*</span>"), placeholder = "e.g. Vios", width = "100%"),
+          numericInput(
+            "car_year",
+            HTML("Year <span style='color:red;'>*</span>"),
+            value = year(Sys.Date()),
+            min = 1900,
+            max = year(Sys.Date()) + 1,
+            width = "100%"
+          ),
+          textInput("car_type", HTML("Type <span style='color:red;'>*</span>"), placeholder = "e.g. Sedan", width = "100%"),
+          numericInput(
+            "car_price",
+            HTML("Price per Day (₱) <span style='color:red;'>*</span>"),
+            value = 0,
+            min = 0,
+            step = 100,
+            width = "100%"
+          ),
+          selectInput(
+            "car_status",
+            HTML("Status <span style='color:red;'>*</span>"),
+            choices = c(
+              "Available" = "available",
+              "Rented" = "rented",
+              "Maintenance" = "maintenance"
+            ),
+            width = "100%"
+          ),
+          fileInput(
+            "car_image",
+            "Car Image",
+            accept = c("image/png", "image/jpg", "image/jpeg"),
+            width = "100%"
+          )
+        )
+      )
+    )
+  }
+  
+  observeEvent(input$open_add_car_modal, {
+    editing_car_id(NULL)
+    
+    updateTextInput(session, "car_brand", value = "")
+    updateTextInput(session, "car_model", value = "")
+    updateNumericInput(session, "car_year", value = year(Sys.Date()))
+    updateNumericInput(session, "car_price", value = 0)
+    updateTextInput(session, "car_type", value = "")
+    updateSelectInput(session, "car_status", selected = "available")
+    
+    showModal(carModalUI("Add New Car"))
   })
   
-  output$cars_cards <- renderUI({
-    df <- paged_cars()
-    if (nrow(df) == 0) {
-      return(div(style = "text-align:center; color:#6B7280;", "No cars found"))
+  editing_car_id <- reactiveVal(NULL)
+  
+  observe({
+    lapply(cars_df()$car_id, function(id) {
+      
+      observeEvent(input[[paste0("edit_", id)]], {
+        car <- cars_df()[cars_df()$car_id == id,]
+        editing_car_id(id)
+        
+        updateTextInput(session, "car_brand", value = car$brand)
+        updateTextInput(session, "car_model", value = car$model)
+        updateNumericInput(session, "car_year", value = car$year)
+        updateSelectInput(session, "car_type", selected = car$type)
+        updateNumericInput(session, "car_price", value = car$price_per_day)
+        updateSelectInput(session, "car_status", selected = car$status)
+        
+        showModal(carModalUI("Edit Car"))
+      }, ignoreInit = TRUE)
+      
+      # ---------------- Delete button ---------------
+      observeEvent(input[[paste0("delete_", id)]], {
+        
+        # Show confirmation modal
+        showModal(modalDialog(
+          title = tagList(icon("exclamation-triangle", style = "color: #FFFFFF;"), " Confirm Delete"),
+          div(
+            style = "color: #gray; font-weight: bold; margin-bottom: 15px;",
+            paste0("Are you sure you want to delete car ID: CAR-000", id, "? This action cannot be undone.")
+          ),
+          easyClose = TRUE,
+          
+          footer = tagList(
+            # Cancel button 
+            tags$button(
+              type = "button",
+              class = "btn-modal-cancel",
+              `data-dismiss` = "modal",  
+              "Cancel"
+            ),
+            
+            # Save button
+            actionButton(paste0("confirm_delete_", id), "Delete", class = "btn btn-danger")
+          ),
+          
+        ))
+        
+        # Handle confirm delete
+        observeEvent(input[[paste0("confirm_delete_", id)]], {
+          dbExecute(con, paste0("DELETE FROM Cars WHERE car_id=", id))
+          removeModal()  # Close confirmation modal
+          
+          showNotification(
+            ui = div(icon("check-circle"), "Car deleted successfully!"),
+            type = "message", duration = 4, session = session
+          )
+          
+          # Refresh car data
+          cars_data(safe_query("SELECT * FROM Cars ORDER BY car_id ASC"))
+        }, once = TRUE)  
+      }, ignoreInit = TRUE)
+      
+    })
+  })
+
+  
+  observeEvent(input$save_car_btn, {
+    
+    # ---------------- Validate required fields ----------------
+    if (input$car_brand == "" || input$car_model == "") {
+      showNotification(
+        ui = div(icon("exclamation-circle"), "Required fields missing"),
+        duration = 5, type = "error", closeButton = TRUE, id = "notif_required", session = session
+      )
+      return()
     }
     
-    cards <- lapply(seq_len(nrow(df)), function(i) {
-      car <- df[i, ]
+    tryCatch({
       
-      tags$div(
+      # ---------------- Handle Image Upload ----------------
+      img_path <- NULL
+      img_file_db <- NULL  # what we save in DB
+      
+      if (!is.null(input$car_image)) {
+        img_file <- input$car_image
+        ext <- tools::file_ext(img_file$name)
+        
+        # Create unique filename
+        img_file_name <- paste0("car_", as.integer(Sys.time()), ".", ext)
+        
+        # Ensure folder exists
+        dir.create("www/car_images", showWarnings = FALSE)
+        
+        # Full path on disk
+        img_path <- file.path("www/car_images", img_file_name)
+        
+        # Copy uploaded file
+        file.copy(img_file$datapath, img_path)
+        
+        # Path to save in DB (relative to www/)
+        img_file_db <- file.path("car_images", img_file_name)
+      }
+      
+      # ---------------- Insert or Update ----------------
+      if (is.null(editing_car_id())) {
+        # INSERT new car
+        dbExecute(con, paste0(
+          "INSERT INTO Cars (brand, model, year, type, price_per_day, status, image) VALUES (",
+          dbQuoteString(con, input$car_brand), ",",
+          dbQuoteString(con, input$car_model), ",",
+          input$car_year, ",",
+          dbQuoteString(con, input$car_type), ",",
+          input$car_price, ",",
+          dbQuoteString(con, input$car_status), ",",
+          ifelse(is.null(img_file_db), "NULL", dbQuoteString(con, img_file_db)), ")"
+        ))
+        
+        showNotification(
+          ui = div(icon("check-circle"), span("Car added successfully!", style="margin-left:8px;")),
+          duration = 4, closeButton = TRUE, type = "message", session = session
+        )
+        
+      } else {
+        # UPDATE existing car
+        update_query <- paste0(
+          "UPDATE Cars SET brand=", dbQuoteString(con, input$car_brand),
+          ", model=", dbQuoteString(con, input$car_model),
+          ", year=", input$car_year,
+          ", type=", dbQuoteString(con, input$car_type),
+          ", price_per_day=", input$car_price,
+          ", status=", dbQuoteString(con, input$car_status)
+        )
+        
+        # Update image only if a new one is uploaded
+        if (!is.null(img_file_db)) {
+          update_query <- paste0(update_query, ", image=", dbQuoteString(con, img_file_db))
+        }
+        
+        update_query <- paste0(update_query, " WHERE car_id=", editing_car_id())
+        dbExecute(con, update_query)
+        
+        showNotification(
+          ui = div(icon("check-circle"), span("Car updated successfully!", style="margin-left:8px;")),
+          duration = 4, closeButton = TRUE, type = "message", session = session
+        )
+      }
+      
+      # Refresh data and close modal
+      cars_data(safe_query("SELECT * FROM Cars ORDER BY car_id ASC"))
+      removeModal()
+      
+    }, error = function(e) {
+      showNotification(
+        ui = div(icon("times-circle"), span(paste("Car save error:", e$message), style="margin-left:8px;")),
+        duration = 5, closeButton = TRUE, type = "error", session = session
+      )
+    })
+  })
+  
+  
+  output$cars_cards <- renderUI({
+    df <- filtered_cars()
+    
+    if (nrow(df) == 0) {
+      return(
+        div(
+          style = "
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 50vh;
+            color: #6B7280;
+            padding: 20px;
+            text-align: center;
+          ",
+          
+          # Car icon
+          tags$i(class = "fa fa-car animate-bounce", 
+                 style = "
+               font-size: 8vw; 
+               max-font-size: 80px; 
+               margin-bottom: 20px; 
+                 color: #1F2937;
+             "),
+          
+          # Title message
+          div("No cars match your search", 
+              style = "
+            margin-top: 25px;
+            font-size: 20px;
+            font-weight: 600;
+            color: #111827;   
+          "),
+          
+          # Subtitle message
+          div("Try different filter or clear the search", 
+              style = "
+            margin-top: 8px;
+            font-size: 16px;
+            font-weight: 400;
+            color: #6B7280;   
+          "),
+          
+          # Add keyframes for bounce animation
+          tags$style(HTML("
+        @keyframes bounce {
+          0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+          40% { transform: translateY(-10px); }
+          60% { transform: translateY(-5px); }
+        }
+        .animate-bounce {
+          animation: bounce 2s infinite;
+        }
+      "))
+        )
+      )
+    }
+    
+    
+    cards <- lapply(seq_len(nrow(df)), function(i) {
+      car <- df[i,]
+      
+      div(
         class = "car-card",
-        `data-car-id` = car$car_id,
         
         if (!is.na(car$image) && car$image != "")
           tags$img(src = car$image),
         
-        tags$h4(paste(car$brand, car$model)),
-        tags$p(paste("Year:", car$year)),
-        tags$p(paste("Type:", car$type)),
-        tags$p(paste("Price: ₱", format(car$price_per_day, big.mark = ",", nsmall = 2))),
-        tags$span(
-          class = paste("status-pill", tolower(car$status)),
-          tools::toTitleCase(car$status)
+        h4(paste(car$brand, car$model)),
+        p(paste("Year:", car$year)),
+        p(paste("Type:", car$type)),
+        p(paste("₱", format(car$price_per_day, big.mark=","))),
+        HTML(status_pill(car$status)),  
+        
+        div(
+          style="margin-top:8px; display:flex; gap:6px; justify-content:center;",
+          actionButton(
+            paste0("edit_", car$car_id),
+            NULL, icon = icon("edit"),
+            class = "btn-primary btn-sm"
+          ),
+          actionButton(
+            paste0("delete_", car$car_id),
+            NULL, icon = icon("trash"),
+            class = "btn-danger btn-sm"
+          )
         )
       )
     })
     
-    tagList(
-      tags$div(class = "cars-container", do.call(tagList, cards)),
-      tags$script(HTML("
-      $(document).on('click', '.car-card', function() {
-        var carId = $(this).data('car-id');
-        Shiny.setInputValue('selected_car_id', carId, {priority: 'event'});
-      });
-    "))
-    )
-  })
-  
-  
-  # Fill form when car selected
-  observeEvent(input$selected_car_id, {
-    row <- selected_car_row()
-    if (is.null(row) || nrow(row) == 0) return()
-    
-    updateTextInput(session, "car_brand", value = row$brand)
-    updateTextInput(session, "car_model", value = row$model)
-    updateNumericInput(session, "car_year", value = row$year)
-    updateTextInput(session, "car_type", value = row$type)
-    updateNumericInput(session, "car_price", value = row$price_per_day)
-    updateSelectInput(session, "car_status", selected = row$status)
-  }, ignoreNULL = TRUE)
-  
-  
-  useShinyjs()
-  
-  # Reset car fields function
-  reset_car_fields <- function(session) {
-    updateTextInput(session, "car_brand", value = "")
-    updateTextInput(session, "car_model", value = "")
-    updateNumericInput(session, "car_year", value = year(Sys.Date()))
-    updateTextInput(session, "car_type", value = "")
-    updateNumericInput(session, "car_price", value = 0)
-    updateSelectInput(session, "car_status", selected = "available")
-    
-    output$car_image_ui <- renderUI({
-      fileInput(
-        "car_image",
-        "Car Image",
-        accept = c("image/png", "image/jpeg")
-      )
-    })    
-    session$sendCustomMessage("clear_selected_car", TRUE)
-  }
-  
-  # JS handler to clear selected_car_id
-  tags$script(HTML("
-Shiny.addCustomMessageHandler('clear_selected_car', function(x) {
-  Shiny.setInputValue('selected_car_id', null, {priority: 'event'});
-});
-"))
-  
-  observeEvent(input$add_car_btn, {
-    if (input$car_brand == "" || input$car_model == "" || input$car_type == "" ||
-        is.null(input$car_year) || is.null(input$car_price)) {
-      showNotification("All fields are required!", type = "error")
-      return()
-    }
-    
-    # Handle image upload
-    img_path <- NULL
-    if (!is.null(input$car_image)) {
-      img_file <- input$car_image
-      ext <- tools::file_ext(img_file$name)
-      img_name <- paste0("car_", as.integer(Sys.time()), ".", ext)
-      dir.create("www/car_images", showWarnings = FALSE)
-      img_path <- file.path("www/car_images", img_name)
-      file.copy(img_file$datapath, img_path)
-    }
-    
-    b <- DBI::dbQuoteString(con, input$car_brand)
-    m <- DBI::dbQuoteString(con, input$car_model)
-    t <- DBI::dbQuoteString(con, input$car_type)
-    st <- DBI::dbQuoteString(con, input$car_status)
-    img_db <- if (!is.null(input$car_image)) {
-      DBI::dbQuoteString(con, paste0("car_images/", img_name))
-    } else {
-      "NULL"  
-    }
-    
-    q <- paste0(
-      "INSERT INTO Cars (brand, model, year, type, price_per_day, status, image) VALUES (",
-      b, ",", m, ",", input$car_year, ",", t, ",", input$car_price, ",", st, ",", img_db, ")"
-    )
-    
-    tryCatch({
-      dbExecute(con, q)
-      showNotification("Car added", type = "message")
-      reset_car_fields(session)
-      cars_data(safe_query("SELECT * FROM Cars ORDER BY car_id ASC"))
-    }, error = function(e) {
-      showNotification(paste("Add car error:", e$message), type = "error")
-    })
-  })
-  
-  observeEvent(input$update_car_btn, {
-    row <- selected_car_row()
-    if(is.null(row)) { 
-      showNotification("Select a car to update", type = "warning")
-      return() 
-    }
-    
-    car_id <- as.integer(row$car_id)
-    
-    # Handle image upload
-    img_db <- NULL
-    if (!is.null(input$car_image)) {
-      img_file <- input$car_image
-      ext <- tools::file_ext(img_file$name)
-      img_name <- paste0("car_", as.integer(Sys.time()), ".", ext)
-      dir.create("www/car_images", showWarnings = FALSE)
-      img_path <- file.path("www/car_images", img_name)
-      file.copy(img_file$datapath, img_path)
-      img_db <- DBI::dbQuoteString(con, paste0("car_images/", img_name))
-    }
-    
-    b <- DBI::dbQuoteString(con, input$car_brand)
-    m <- DBI::dbQuoteString(con, input$car_model)
-    t <- DBI::dbQuoteString(con, input$car_type)
-    st <- DBI::dbQuoteString(con, input$car_status)
-    
-    q <- paste0(
-      "UPDATE Cars SET brand=", b,
-      ", model=", m,
-      ", year=", input$car_year,
-      ", type=", t,
-      ", price_per_day=", input$car_price,
-      ", status=", st
-    )
-    if (!is.null(img_db)) q <- paste0(q, ", image=", img_db)
-    q <- paste0(q, " WHERE car_id=", car_id)
-    
-    tryCatch({
-      dbExecute(con, q)
-      showNotification("Car updated", type = "message")
-      reset_car_fields(session)
-      cars_data(safe_query("SELECT * FROM Cars ORDER BY car_id ASC"))
-    }, error = function(e) {
-      showNotification(paste("Update car error:", e$message), type = "error")
-    })
-  })
-  
-  observeEvent(input$delete_car_btn, {
-    row <- selected_car_row()
-    if(is.null(row)) { showNotification("Select a car to delete", type = "warning"); return() }
-    car_id <- as.integer(row$car_id)
-    tryCatch({
-      dbExecute(con, paste0("DELETE FROM Cars WHERE car_id=", car_id))
-      showNotification("Car deleted", type = "message")
-      reset_car_fields(session)
-      cars_data(safe_query("SELECT * FROM Cars ORDER BY car_id ASC"))
-    }, error = function(e) {
-      showNotification(paste("Delete car error:", e$message), type = "error")
-    })
+    div(class="cars-container", cards)
   })
   
   
@@ -1881,14 +2205,6 @@ Shiny.addCustomMessageHandler('clear_selected_car', function(x) {
     }
   })
   
-  output$car_image_ui <- renderUI({
-    fileInput(
-      "car_image",
-      "Car Image",
-      accept = c("image/png", "image/jpeg")
-    )
-  })
-  
   output$booking_status_ui <- renderUI({
     div(
       tags$label(HTML("Booking Status <span style='color:red;'>*</span>")),
@@ -1906,17 +2222,6 @@ Shiny.addCustomMessageHandler('clear_selected_car', function(x) {
     )
   })
   
-  output$car_status_ui <- renderUI({
-    div(
-      tags$label(HTML("Car Status <span style='color:red;'>*</span>")),
-      selectInput(
-        "car_status", 
-        label = NULL,  
-        choices = c("Select Car Status" = "", "available", "rented", "maintenance"),
-        selected = ""
-      )
-    )
-  })
   
   observeEvent(input$selected_car_for_booking, {
     req(input$selected_car_for_booking)
@@ -2099,22 +2404,20 @@ Shiny.addCustomMessageHandler('clear_selected_car', function(x) {
   
   # -------------------- Car Status Update --------------------
   update_car_status <- function() {
-    today <- Sys.Date()
-    today_sql <- DBI::dbQuoteString(con, as.character(today))
+    # Rented cars: any booking that is ongoing
+    dbExecute(con, "
+    UPDATE Cars SET status = 'rented' 
+    WHERE car_id IN (SELECT car_id FROM Bookings WHERE status = 'ongoing')
+  ")
     
-    # Reset cars
-    dbExecute(con, "UPDATE Cars SET status = 'available' WHERE status != 'maintenance'")
-    
-    # Set rented only if booking is active today
-    dbExecute(con, paste0(
-      "UPDATE Cars SET status = 'rented' 
-     WHERE car_id IN (
-       SELECT car_id FROM Bookings 
-       WHERE status = 'ongoing' 
-         AND ", today_sql, " BETWEEN start_date AND end_date
-     )"
-    ))
+    # Available cars: any car that has no ongoing booking
+    dbExecute(con, "
+    UPDATE Cars SET status = 'available'
+    WHERE car_id NOT IN (SELECT car_id FROM Bookings WHERE status = 'ongoing')
+      AND status != 'maintenance'
+  ")
   }
+  
   
   
   # -------------------- Update Booking --------------------
@@ -2149,22 +2452,6 @@ Shiny.addCustomMessageHandler('clear_selected_car', function(x) {
     tryCatch({
       dbExecute(con, qcust)  # Update customer info
       dbExecute(con, qbook)  # Update booking info
-      
-      # Update car status (SQLite-compatible)
-      update_car_status <- function() {
-        today <- Sys.Date()
-        today_str <- as.character(today)
-        
-        # Reset cars
-        dbExecute(con, "UPDATE Cars SET status = 'available' WHERE status != 'maintenance'")
-        
-        # Set rented if active booking today
-        dbExecute(con, paste0(
-          "UPDATE Cars SET status = 'rented' ",
-          "WHERE car_id IN (SELECT car_id FROM Bookings ",
-          "WHERE status = 'ongoing' AND '", today_str, "' BETWEEN start_date AND end_date)"
-        ))
-      }
       
       update_car_status()
       
