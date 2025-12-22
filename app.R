@@ -98,7 +98,12 @@ server <- function(input, output, session) {
     style = "padding:0; margin:0;",
     
     tags$head(
-      
+      tags$title("Car Rental System"), 
+      tags$link(
+        rel = "icon",
+        type = "image/png",
+        href = "uploads/logo(2).png"
+      ),
       tags$link(
         rel = "stylesheet",
         href = "https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
@@ -1492,7 +1497,6 @@ $(document).on('click', '.toggle-password', function () {
   output$tab_title_customers <- renderUI({
     tags$div(class = "tab-page-title", icon("users"), "CUSTOMER LIST")
   })
-  
   
   cars_df <- reactivePoll(
     poll_interval_ms, session,
