@@ -1022,113 +1022,122 @@ $(document).on('click', '.toggle-password', function () {
       font-weight: 600;
       display: inline-block;
     }
+    /* Badge container centered */
+  .badge-container {
+    text-align: center;
+    margin: 5px 0;
+  }
+
+  .badge-year {
+    display: inline-block;
+    background-color: #D1FAE5;  /* green tint */
+    color: #065F46;
+    font-size: 12px;
+    font-weight: 600;
+    padding: 2px 8px;
+    border-radius: 12px;
+    margin: 2px 4px;
+  }
+  
+  .badge-type {
+    display: inline-block;
+    background-color: #E0E7FF;  /* blue tint */
+    color: #1E40AF;
+    font-size: 12px;
+    font-weight: 600;
+    padding: 2px 8px;
+    border-radius: 12px;
+    margin: 2px 4px;
+  }
       
-      /* Cars grid: default smaller screens */
+      /* Cars grid container */
     .cars-container {
         display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+        grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
         gap: 20px;
+        justify-items: center; /* center cards horizontally */
     }
     
-    /* Desktop: 5 cards per row */
+    /* Car card */
+    .car-card {
+        background: #fff;
+        border-radius: 12px;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+        padding: 15px;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        transition: transform 0.2s, box-shadow 0.2s;
+        width: 100%;
+        max-width: 250px;
+        position: relative;
+    }
+    
+    /* Hover effect */
+    .car-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+    }
+    
+    /* Car image */
+    .car-card img {
+        width: 100%;
+        height: 150px;
+        object-fit: cover;
+        border-radius: 10px;
+        margin-bottom: 10px;
+    }
+    
+    /* Car info text */
+    .car-card h4 {
+        margin: 5px 0;
+        font-weight: 700;
+        color: #1F2937;
+        font-size: 16px;
+        text-align: center;
+    }
+    
+    .car-card p {
+        margin: 3px 0;
+        color: #4B5563;
+        font-size: 13px;
+        text-align: center;
+    }
+    
+    .car-card .price {
+        font-weight: 600;
+        color: #111827;
+    }
+    
+    /* Buttons at bottom */
+    .car-card .card-actions {
+        margin-top: 10px;
+        display: flex;
+        gap: 8px;
+        justify-content: center;
+    }
+    
+    /* Responsive grid */
     @media (min-width: 1200px) {
         .cars-container {
             grid-template-columns: repeat(5, 1fr);
         }
-    
-        .car-card {
-            padding: 20px;
-            height: 320px; 
-        }
-    
-        .car-card img {
-            height: 160px; 
-        }
-    
-        .car-card h4 {
-            font-size: 18px;
-        }
-    
-        .car-card p {
-            font-size: 14px;
-        }
-    
-        .car-card {
-            gap: 8px; 
-        }
     }
     
-    /* Tablets: 3 cards per row */
     @media (min-width: 768px) and (max-width: 1199px) {
         .cars-container {
             grid-template-columns: repeat(3, 1fr);
         }
-    
-        .car-card {
-            height: 300px;
-            padding: 15px;
-        }
-    
-        .car-card img {
-            height: 140px;
-        }
     }
     
-    /* Mobile: 1 card per row */
     @media (max-width: 767px) {
         .cars-container {
             grid-template-columns: repeat(1, 1fr);
         }
-    
-        .car-card {
-            height: auto;
-            padding: 12px;
-        }
-    
         .car-card img {
             height: 120px;
         }
     }
-
-      .car-card {
-        border:1px solid #ddd; 
-        border-radius:8px; 
-        padding:10px; 
-        text-align:center; 
-        cursor:pointer;
-        transition: all 0.2s;
-        background-color: #fff;
-      }
-      .car-card:hover {
-        box-shadow: 0 4px 8px rgba(0,0,0,0.2);
-      }
-      .car-card img {
-        width:100%; 
-        height:120px; 
-        object-fit:cover; 
-        border-radius:6px;
-      }
-
-      
-      .car-card h4 {
-        color: #FACC15;        
-        font-weight: 800;
-        font-size: 16px;
-        margin-top: 8px;
-        margin-bottom: 6px;
-      }
-      
-      .car-card p {
-        color: #1E3A8A;        
-        font-size: 13px;
-        margin: 2px 0;
-        font-weight: 600;
-      }
-      
-      /* Hover effect */
-      .car-card:hover h4 {
-        color: #EAB308;     
-      }
 
       
       .available { background:#DCFCE7; color:#166534; }
@@ -1877,6 +1886,7 @@ $(document).on('click', '.toggle-password', function () {
             ),
             width = "100%"
           ),
+          
           fileInput(
             "car_image",
             "Car Image",
@@ -2067,92 +2077,69 @@ $(document).on('click', '.toggle-password', function () {
       return(
         div(
           style = "
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            height: 50vh;
-            color: #6B7280;
-            padding: 20px;
-            text-align: center;
-          ",
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          height: 50vh;
+          color: #6B7280;
+          padding: 20px;
+          text-align: center;
+        ",
           
-          # Car icon
           tags$i(class = "fa fa-car animate-bounce", 
                  style = "
-               font-size: 8vw; 
-               max-font-size: 80px; 
-               margin-bottom: 20px; 
+                 font-size: 8vw; 
+                 max-font-size: 80px; 
+                 margin-bottom: 20px; 
                  color: #1F2937;
-             "),
+               "),
           
-          # Title message
-          div("No cars match your search", 
-              style = "
-            margin-top: 25px;
-            font-size: 20px;
-            font-weight: 600;
-            color: #111827;   
-          "),
+          div("No cars match your search", style = "margin-top: 25px; font-size: 20px; font-weight: 600; color: #111827;"),
+          div("Try different filter or clear the search", style = "margin-top: 8px; font-size: 16px; font-weight: 400; color: #6B7280;"),
           
-          # Subtitle message
-          div("Try different filter or clear the search", 
-              style = "
-            margin-top: 8px;
-            font-size: 16px;
-            font-weight: 400;
-            color: #6B7280;   
-          "),
-          
-          # Add keyframes for bounce animation
           tags$style(HTML("
-        @keyframes bounce {
-          0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
-          40% { transform: translateY(-10px); }
-          60% { transform: translateY(-5px); }
-        }
-        .animate-bounce {
-          animation: bounce 2s infinite;
-        }
-      "))
+          @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+            40% { transform: translateY(-10px); }
+            60% { transform: translateY(-5px); }
+          }
+          .animate-bounce { animation: bounce 2s infinite; }
+          
+        "))
         )
       )
     }
     
-    
-    cards <- lapply(seq_len(nrow(df)), function(i) {
-      car <- df[i,]
-      
-      div(
-        class = "car-card",
-        
-        if (!is.na(car$image) && car$image != "")
-          tags$img(src = car$image),
-        
-        h4(paste(car$brand, car$model)),
-        p(paste("Year:", car$year)),
-        p(paste("Type:", car$type)),
-        p(paste("₱", format(car$price_per_day, big.mark=","))),
-        HTML(status_pill(car$status)),  
-        
-        div(
-          style="margin-top:8px; display:flex; gap:6px; justify-content:center;",
-          actionButton(
-            paste0("edit_", car$car_id),
-            NULL, icon = icon("edit"),
-            class = "btn-primary btn-sm"
-          ),
-          actionButton(
-            paste0("delete_", car$car_id),
-            NULL, icon = icon("trash"),
-            class = "btn-danger btn-sm"
+    div(class="cars-container",
+        lapply(seq_len(nrow(df)), function(i) {
+          car <- df[i,]
+          div(class="car-card",
+              div(style="position:relative;",
+                  if (!is.na(car$image) && car$image != "") 
+                    tags$img(src=car$image),
+                  div(style="position:absolute; top:10px; right:10px;", HTML(status_pill(car$status)))
+              ),
+              h4(paste(car$brand, car$model)),
+              
+              # Year and Type badges with icons
+              div(class="badge-container",
+                  span(class="badge-year", HTML(paste0('<i class="fa fa-calendar"></i> ', car$year))),
+                  span(class="badge-type", HTML(paste0('<i class="fa fa-car"></i> ', car$type)))
+              ),
+              
+              p(class="price", paste("Price per Day: ₱", format(car$price_per_day, big.mark=","))),
+              
+              
+              div(class="card-actions",
+                  actionButton(paste0("edit_", car$car_id), NULL, icon=icon("edit"), class="btn-primary btn-sm", style="flex:1;"),
+                  actionButton(paste0("delete_", car$car_id), NULL, icon=icon("trash"), class="btn-danger btn-sm", style="flex:1;")
+              )
           )
-        )
-      )
-    })
-    
-    div(class="cars-container", cards)
+        })
+    )
   })
+  
   
   
   
