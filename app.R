@@ -2248,7 +2248,6 @@ server <- function(input, output, session) {
     )
   })
   
-  
   observeEvent(input$selected_car_for_booking, {
     req(input$selected_car_for_booking)
     car_id <- as.integer(input$selected_car_for_booking)
@@ -2384,6 +2383,18 @@ server <- function(input, output, session) {
       )
       return()
     }
+    
+    # Email uniqueness validation 
+    email_exists <- dbGetQuery(con, paste0(
+      "SELECT COUNT(*) AS n FROM Customers WHERE email = ",
+      DBI::dbQuoteString(con, input$cust_email)
+    ))$n
+    
+    if (email_exists > 0) {
+      showNotification("This email is already used by another customer", type = "error")
+      return()
+    }
+    
     start_date <- as.Date(input$start_date)
     end_date <- as.Date(input$end_date)
     
@@ -2511,6 +2522,17 @@ server <- function(input, output, session) {
       )
       return()
     }
+    # Email uniqueness validation 
+    email_exists <- dbGetQuery(con, paste0(
+      "SELECT COUNT(*) AS n FROM Customers WHERE email = ",
+      DBI::dbQuoteString(con, input$cust_email)
+    ))$n
+    
+    if (email_exists > 0) {
+      showNotification("This email is already used by another customer", type = "error")
+      return()
+    }
+    
     start_date <- as.Date(input$start_date)
     end_date   <- as.Date(input$end_date)
     
