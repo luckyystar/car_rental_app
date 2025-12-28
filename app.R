@@ -2384,17 +2384,6 @@ server <- function(input, output, session) {
       return()
     }
     
-    # Email uniqueness validation 
-    email_exists <- dbGetQuery(con, paste0(
-      "SELECT COUNT(*) AS n FROM Customers WHERE email = ",
-      DBI::dbQuoteString(con, input$cust_email)
-    ))$n
-    
-    if (email_exists > 0) {
-      showNotification("This email is already used by another customer", type = "error")
-      return()
-    }
-    
     start_date <- as.Date(input$start_date)
     end_date <- as.Date(input$end_date)
     
@@ -2446,12 +2435,20 @@ server <- function(input, output, session) {
         DBI::dbQuoteString(con, input$cust_contact), ",",
         DBI::dbQuoteString(con, input$cust_email), ")"
       )
-      tryCatch(dbExecute(con, qins), error = function(e) {
-        showNotification(paste("Customer insert error:", e$message), type = "error")
-        return()
+      # Try insert and handle unique email error
+      cust_id <- tryCatch({
+        dbExecute(con, qins)
+        dbGetQuery(con, "SELECT last_insert_rowid() AS id")$id
+      }, error = function(e) {
+        if (grepl("UNIQUE constraint failed", e$message)) {
+          showNotification("This email is already used by another customer", type = "error")
+        } else {
+          showNotification(paste("Customer insert error:", e$message), type = "error")
+        }
+        return(NULL)
       })
-      # SQLite version of LAST_INSERT_ID()
-      cust_id <- dbGetQuery(con, "SELECT last_insert_rowid() AS id")$id
+      
+      if (is.null(cust_id)) return()  
     } else {
       cust_id <- cust$customer_id[1]
     }
@@ -2522,10 +2519,15 @@ server <- function(input, output, session) {
       )
       return()
     }
-    # Email uniqueness validation 
+    
+    row <- selected_booking_row()
+    cust_id <- row$customer_id
+    
+    # Check if email exists for other customers
     email_exists <- dbGetQuery(con, paste0(
       "SELECT COUNT(*) AS n FROM Customers WHERE email = ",
-      DBI::dbQuoteString(con, input$cust_email)
+      DBI::dbQuoteString(con, input$cust_email),
+      " AND customer_id != ", cust_id
     ))$n
     
     if (email_exists > 0) {
