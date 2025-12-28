@@ -397,7 +397,7 @@ server <- function(input, output, session) {
             class = "login-logo"
           ),
           
-          p("PLease log in to the Car Rental System as Admin"),
+          p("Please log in to the Car Rental System as Admin"),
           
           div(
             class = "login-form",
@@ -2182,9 +2182,6 @@ server <- function(input, output, session) {
     )
   })
 
-
-  
-  
   # ---------------- Bookings form & table ----------------
   output$car_select_ui <- renderUI({
     req(input$start_date, input$end_date)
@@ -2379,8 +2376,26 @@ server <- function(input, output, session) {
       return()
     }
     
+    # Phone validation
+    if (!grepl("^09\\d{9}$", input$cust_contact)) {
+      showNotification(
+        "Phone number must be 11 digits and start with 09",
+        type = "error"
+      )
+      return()
+    }
     start_date <- as.Date(input$start_date)
     end_date <- as.Date(input$end_date)
+    
+    if (is.na(start_date) || start_date < Sys.Date()) {
+      showNotification("Start date cannot be in the past", type = "error")
+      return()
+    }
+    
+    if (is.na(end_date) || end_date < start_date) {
+      showNotification("End date must be on or after start date", type = "error")
+      return()
+    }
     
     if (is.na(start_date) || is.na(end_date) || end_date < start_date) {
       showNotification("End date must be on/after start date", type = "error")
@@ -2451,7 +2466,7 @@ server <- function(input, output, session) {
     
     tryCatch({
       dbExecute(con, qbook)
-      showNotification(paste0("Booking created — Total: ₱", total), type = "message")
+      showNotification(paste0("Booking created successfully! — Total: ₱", total), type = "message")
       
       update_car_status()
       reset_booking_fields(session)
@@ -2488,8 +2503,31 @@ server <- function(input, output, session) {
       showNotification("Select a booking to update", type = "warning")
       return()
     }
+    # Phone validation
+    if (!grepl("^09\\d{9}$", input$cust_contact)) {
+      showNotification(
+        "Phone number must be 11 digits and start with 09",
+        type = "error"
+      )
+      return()
+    }
     start_date <- as.Date(input$start_date)
     end_date   <- as.Date(input$end_date)
+    
+    if (is.na(start_date) || start_date < Sys.Date()) {
+      showNotification("Start date cannot be in the past", type = "error")
+      return()
+    }
+    
+    if (is.na(end_date) || end_date < start_date) {
+      showNotification("End date must be on or after start date", type = "error")
+      return()
+    }
+    
+    if (is.na(start_date) || is.na(end_date) || end_date < start_date) {
+      showNotification("End date must be on/after start date", type = "error")
+      return()
+    }
     car_id     <- as.integer(input$selected_car_for_booking)
     
     # -------------------- Overlap validation --------------------
@@ -2535,7 +2573,10 @@ server <- function(input, output, session) {
       
       update_car_status()
       
-      showNotification("Booking and customer info updated successfully", type = "message")
+      showNotification("Booking and customer info updated successfully!", type = "message")
+      
+      DT::dataTableProxy("booking_table") %>% DT::selectRows(NULL)
+      
       reset_booking_fields(session)
       
       bookings_data(
@@ -2571,9 +2612,9 @@ server <- function(input, output, session) {
       # Delete customer if no more bookings
       if(remaining == 0) {
         dbExecute(con, paste0("DELETE FROM Customers WHERE customer_id=", row$customer_id))
-        showNotification("Booking and customer deleted", type = "message")
+        showNotification("Booking and customer deleted successfully!", type = "message")
       } else {
-        showNotification("Booking deleted (customer has other bookings)", type = "message")
+        showNotification("Booking deleted successfully!", type = "message")
       }
       
       # Reset fields and refresh data
