@@ -2331,22 +2331,24 @@ server <- function(input, output, session) {
   # ---------------- Booking CRUD ----------------
   
   reset_booking_fields <- function(session) {
-    updateTextInput(session, "cust_name", value = "")
-    updateTextInput(session, "cust_contact", value = "")
-    updateTextInput(session, "cust_email", value = "")
-    updateSelectInput(session, "selected_car_for_booking", selected = character(0))
-    updateNumericInput(session, "car_price_day", value = 0)
-    updateDateInput(session, "start_date", value = Sys.Date())
-    updateDateInput(session, "end_date", value = Sys.Date() + 1)
-    updateNumericInput(session, "total_amount", value = 0)
-    updateSelectInput(session, "booking_status", selected = "ongoing")
-    
-    editing_booking(FALSE)
-    selected_booking_car(NULL)
-    
-    DT::dataTableProxy("booking_table") %>% DT::selectRows(NULL)
-    
+    isolate({
+      updateTextInput(session, "cust_name", value = "")
+      updateTextInput(session, "cust_contact", value = "")
+      updateTextInput(session, "cust_email", value = "")
+      updateSelectInput(session, "selected_car_for_booking", selected = character(0))
+      updateNumericInput(session, "car_price_day", value = 0)
+      updateDateInput(session, "start_date", value = Sys.Date())
+      updateDateInput(session, "end_date", value = Sys.Date() + 1)
+      updateNumericInput(session, "total_amount", value = 0)
+      updateSelectInput(session, "booking_status", selected = "ongoing")
+      
+      editing_booking(FALSE)
+      selected_booking_car(NULL)
+      
+      DT::dataTableProxy("booking_table") %>% DT::selectRows(NULL)
+    })
   }
+  
   
   has_booking_overlap <- function(car_id, start_date, end_date, exclude_booking_id = NULL) {
     
