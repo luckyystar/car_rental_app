@@ -1940,22 +1940,25 @@ server <- function(input, output, session) {
   editing_car_id <- reactiveVal(NULL)
 
   observe({
-    lapply(cars_df()$car_id, function(id) {
-
+    df <- cars_df()
+    
+    # Only create observers once per session
+    lapply(df$car_id, function(id) {
+      if (!is.null(session$userData[[paste0("edit_obs_", id)]])) return()
+      
+      session$userData[[paste0("edit_obs_", id)]] <- TRUE
+      
       observeEvent(input[[paste0("edit_", id)]], {
-
         car <- cars_df()[cars_df()$car_id == id,]
         editing_car_id(id)
-
         updateTextInput(session, "car_brand", value = car$brand)
         updateTextInput(session, "car_model", value = car$model)
         updateNumericInput(session, "car_year", value = car$year)
         updateTextInput(session, "car_type", value = car$type)
         updateNumericInput(session, "car_price", value = car$price_per_day)
         updateSelectInput(session, "car_status", selected = car$status)
-
         showModal(carModalUI("Edit Car"))
-      }, ignoreInit = TRUE,)
+      }, ignoreInit = TRUE)
 
       # ---------------- Delete button ---------------
       observeEvent(input[[paste0("delete_", id)]], {
