@@ -2543,15 +2543,19 @@ server <- function(input, output, session) {
     start_date <- as.Date(input$start_date)
     end_date   <- as.Date(input$end_date)
     
-    if (is.na(start_date) || start_date < Sys.Date()) {
-      showNotification("Start date cannot be in the past", type = "error")
-      return()
+    # Only enforce future dates for new bookings
+    if (input$booking_status != "ended") {
+      if (is.na(start_date) || start_date < Sys.Date()) {
+        showNotification("Start date cannot be in the past", type = "error")
+        return()
+      }
+      
+      if (is.na(end_date) || end_date < start_date) {
+        showNotification("End date must be on or after start date", type = "error")
+        return()
+      }
     }
     
-    if (is.na(end_date) || end_date < start_date) {
-      showNotification("End date must be on or after start date", type = "error")
-      return()
-    }
     
     if (is.na(start_date) || is.na(end_date) || end_date < start_date) {
       showNotification("End date must be on/after start date", type = "error")
