@@ -76,11 +76,14 @@ CREATE TABLE IF NOT EXISTS bookings (
   end_date TEXT NOT NULL,
   total_amount REAL NOT NULL,
   updated_at TEXT DEFAULT (datetime('now')),
-  status TEXT CHECK(status IN ('reserved','ongoing','ended')) NOT NULL,
+  status TEXT CHECK(
+    status IN ('reserved','active','completed','cancelled','no-show')
+  ) NOT NULL DEFAULT 'reserved',
   FOREIGN KEY (customer_id) REFERENCES customers(customer_id) ON DELETE CASCADE,
   FOREIGN KEY (car_id) REFERENCES cars(car_id) ON DELETE CASCADE
 )
 ")
+
 
 
 # -------------------------- UI --------------------------
@@ -1151,13 +1154,16 @@ server <- function(input, output, session) {
     }
 
       
-      .available { background:#DCFCE7; color:#166534; }
-      .rented { background:#FEE2E2; color:#991B1B; }
-      .maintenance { background:#FDE68A; color:#92400E; }
+      .status-available { background:#DCFCE7; color:#166534; }
+      .status-rented { background:#FEE2E2; color:#991B1B; }
+      .status-maintenance { background:#FDE68A; color:#92400E; }
       
-      .ongoing { background:#DBEAFE; color:#1D4ED8; }
-      .reserved { background:#FDE68A; color:#92400E; }   
-      .ended { background:#E5E7EB; color:#374151; }
+      .status-reserved { background:#FDE68A; color:#92400E; }
+      .status-active { background:#DBEAFE; color:#1D4ED8; }
+      .status-completed { background:#E5E7EB; color:#374151; }
+      .status-cancelled { background:#FECACA; color:#991B1B; }
+      .status-no-show { background:#FBCFE8; color:#9D174D; }
+
       
 
       .modal-body .form-group {
@@ -1351,17 +1357,12 @@ server <- function(input, output, session) {
                       uiOutput("monthRevenueBox")
                     ),
                     fluidRow(
-                      column(6,
-                             div(class = "leaderboard-card",
-                                 div(class = "leaderboard-title", "Rentals Over Time"),
-                                 plotlyOutput("rentalsTimePlot", height = "320px")
-                             )
-                      ),
-                      column(6,
-                             div(class = "leaderboard-card",
-                                 div(class = "leaderboard-title", "Revenue Over Time"),
-                                 plotlyOutput("revenueTimePlot", height = "320px")
-                             )
+                      column(
+                        width = 12,
+                        div(
+                          style = "display: flex; justify-content: flex-end; margin-bottom: 15px;",
+                          uiOutput("dashboard_year_ui")
+                        )
                       )
                     ),
                     fluidRow(
@@ -1376,6 +1377,29 @@ server <- function(input, output, session) {
                               div(class = "leaderboard-title", "Top Customers"),
                               uiOutput("customersLeaderboard")
                           )
+                      )
+                    ),
+                    fluidRow(
+                      column(
+                        width = 4,
+                        div(class = "leaderboard-card",
+                            div(class = "leaderboard-title", "Rentals Over Time"),
+                            plotlyOutput("rentalsTimePlot")
+                        )
+                      ),
+                      column(
+                        width = 4,
+                        div(class = "leaderboard-card",
+                            div(class = "leaderboard-title", "Booking Status Overview"),
+                            plotlyOutput("bookingStatusPlot")
+                        )
+                      ),
+                      column(
+                        width = 4,
+                        div(class = "leaderboard-card",
+                            div(class = "leaderboard-title", "Revenue Over Time"),
+                            plotlyOutput("revenueTimePlot")
+                        )
                       )
                     )
             ),
@@ -1461,10 +1485,10 @@ server <- function(input, output, session) {
 
                             # Row 2
                             textInput("cust_email", HTML("Email <span style='color:red;'>*</span>"), placeholder = "Enter email", width = "100%"),
-                            dateInput("start_date", HTML("Start Date <span style='color:red;'>*</span>"), value = Sys.Date(), width = "100%"),
+                            dateInput("start_date", HTML("Pickup Date <span style='color:red;'>*</span>"), value = Sys.Date(), width = "100%"),
 
                             # Row 3
-                            dateInput("end_date", HTML("End Date <span style='color:red;'>*</span>"), value = Sys.Date() + 1, width = "100%"),
+                            dateInput("end_date", HTML("Return Date <span style='color:red;'>*</span>"), value = Sys.Date() + 1, width = "100%"),
                             uiOutput("car_select_ui"),
 
                             # Row 4
@@ -1531,6 +1555,8 @@ server <- function(input, output, session) {
     }
   )
 
+  poll_interval_ms <- 1000  # poll every 1 second
+  
   bookings_df <- reactivePoll(
     poll_interval_ms, session,
     checkFunc = function() {
@@ -1538,10 +1564,14 @@ server <- function(input, output, session) {
       as.character(r$last)
     },
     valueFunc = function() {
-      safe_query("SELECT booking_id, customer_id, car_id, start_date, end_date, total_amount, status
-                  FROM Bookings ORDER BY booking_id DESC")
+      safe_query("
+      SELECT booking_id, customer_id, car_id, start_date, end_date, total_amount, status
+      FROM Bookings
+      ORDER BY booking_id DESC
+    ")
     }
   )
+  
 
   customers_df <- reactivePoll(
     poll_interval_ms, session,
@@ -1609,23 +1639,24 @@ server <- function(input, output, session) {
   })
 
   output$monthRevenueBox <- renderUI({
-    df <- bookings_df()
-
+    df <- bookings_df() %>% filter(!status %in% c("cancelled", "no-show"))
+    
     rev <- if (nrow(df) == 0) {
       0
     } else {
       df$start_date <- as.Date(df$start_date)
+      
       mstart <- floor_date(Sys.Date(), "month")
-      mend <- ceiling_date(Sys.Date(), "month") - days(1)
-
+      mend   <- ceiling_date(Sys.Date(), "month") - days(1)
+      
       sum <- df %>%
         filter(start_date >= mstart & start_date <= mend) %>%
         summarize(sum = sum(total_amount, na.rm = TRUE)) %>%
         pull(sum)
-
+      
       ifelse(is.na(sum), 0, round(sum, 2))
     }
-
+    
     div(
       class = "col-md-3",
       div(class = "kpi-card",
@@ -1640,117 +1671,182 @@ server <- function(input, output, session) {
 
 
   # ---------------- Dashboard Charts ----------------
+  output$dashboard_year_ui <- renderUI({
+    df <- bookings_df()   # reactive
+    years <- if (nrow(df) > 0) sort(unique(year(as.Date(df$start_date))), decreasing = TRUE) else NULL
+    
+    selectInput(
+      inputId = "dashboard_year",
+      label = "Select Year:",
+      choices = c("All Time", years),
+      selected = "All Time",
+      width = "150px"
+    )
+  })
+  
+  # Monthly Rentals
   output$rentalsTimePlot <- renderPlotly({
-    df <- bookings_df()
-    if (nrow(df) == 0) return(NULL)
-
-    df$start_date <- as.Date(df$start_date)
+    req(input$dashboard_year)
+    df <- bookings_df() %>%
+      filter(!status %in% c("cancelled", "no-show")) %>%
+      mutate(start_date = as.Date(start_date))
+    
+    if(input$dashboard_year != "All Time") {
+      df <- df %>% filter(year(start_date) == as.numeric(input$dashboard_year))
+    }
+    
     dfm <- df %>%
-      mutate(month = floor_date(start_date, "month")) %>%
+      mutate(month = month(start_date)) %>%
       group_by(month) %>%
-      summarize(rentals = n(), .groups = "drop")
-
+      summarise(rentals = n(), .groups = "drop")
+    
+    all_months <- data.frame(month = 1:12, month_label = month.abb)
+    dfm <- all_months %>%
+      left_join(dfm, by = "month") %>%
+      mutate(rentals = ifelse(is.na(rentals), 0, rentals),
+             month_label = factor(month_label, levels = month.abb))
+    
+    hover_text <- if(input$dashboard_year == "All Time") {
+      "%{x}<br>Rentals: %{y}<extra></extra>"   # Only month
+    } else {
+      paste0("%{x} ", input$dashboard_year, "<br>Rentals: %{y}<extra></extra>")  # Month + year
+    }
+    
     plot_ly(
-      dfm,
-      x = ~month,
-      y = ~rentals,
-      type = "bar",
+      dfm, x = ~month_label, y = ~rentals, type = "bar",
       marker = list(color = "#FBBF24"),
-      text = NULL,
-      textposition = "none",
-      hovertemplate = "Rentals: %{y}<extra></extra>"
+      hovertemplate = hover_text,
+      hoverlabel = list(bgcolor = "#1E3A8A", font = list(color = "#FFFFFF"))
     ) %>%
       layout(
-        plot_bgcolor  = "#FFFFFF",
+        plot_bgcolor = "#FFFFFF",
         paper_bgcolor = "#FFFFFF",
-        xaxis = list(
-          title = "Month",
-          gridcolor = "#E5E7EB",
-          tickformat = "%b",   # abbreviated month
-          dtick = "M1"         # ensures 1 tick per month
-        ),
+        xaxis = list(title = "Month", gridcolor = "#E5E7EB", type = "category"),
         yaxis = list(title = "Rentals", gridcolor = "#E5E7EB"),
-        font  = list(color = "#1E3A8A" )
+        font = list(color = "#1E3A8A")
       )
-
   })
-
+  
+  # Monthly Revenue
   output$revenueTimePlot <- renderPlotly({
-    df <- bookings_df()
-    if (nrow(df) == 0) return(NULL)
-
-    df$start_date <- as.Date(df$start_date)
+    req(input$dashboard_year)
+    df <- bookings_df() %>%
+      filter(!status %in% c("cancelled", "no-show")) %>%
+      mutate(start_date = as.Date(start_date)) 
+    
+    if(input$dashboard_year != "All Time") {
+      df <- df %>% filter(year(start_date) == as.numeric(input$dashboard_year))
+    }    
     drm <- df %>%
-      mutate(month = floor_date(start_date, "month")) %>%
+      mutate(month = month(start_date)) %>%
       group_by(month) %>%
-      summarize(revenue = sum(total_amount, na.rm = TRUE), .groups = "drop")
-
+      summarise(revenue = sum(total_amount, na.rm = TRUE), .groups = "drop")
+    
+    all_months <- data.frame(month = 1:12, month_label = month.abb)
+    drm <- all_months %>%
+      left_join(drm, by = "month") %>%
+      mutate(revenue = ifelse(is.na(revenue), 0, revenue),
+             month_label = factor(month_label, levels = month.abb))
+    
+    hover_text <- if(input$dashboard_year == "All Time") {
+      "%{text}<br>Revenue: ₱%{y:,.2f}<extra></extra>"  # Only month
+    } else {
+      paste0("%{text} ", input$dashboard_year, "<br>Revenue: ₱%{y:,.2f}<extra></extra>")  # Month + year
+    }
+    
     plot_ly(
-      drm,
-      x = ~month,
-      y = ~revenue,
-      type = "scatter",
-      mode = "lines+markers",
-      line = list(
-        color = "#FACC15",
-        width = 3
-      ),
-      fill = "tozeroy",
-      fillcolor = "rgba(250, 204, 21, 0.35)",
-      text = ~format(month, "%B"),
-      hovertemplate = "%{text}<br>Revenue: ₱%{y:,.2f}<extra></extra>"
+      drm, x = ~month_label, y = ~revenue,
+      type = "scatter", mode = "lines+markers",
+      line = list(color = "#FACC15", width = 3),
+      fill = "tozeroy", fillcolor = "rgba(250,204,21,0.35)",
+      text = ~month_label,
+      hovertemplate = hover_text,
+      hoverlabel = list(bgcolor = "#1E3A8A", font = list(color = "#FFFFFF"))
     ) %>%
       layout(
-        plot_bgcolor  = "#FFFFFF",
+        plot_bgcolor = "#FFFFFF",
         paper_bgcolor = "#FFFFFF",
-        xaxis = list(
-          title = "Month",
-          gridcolor = "#E5E7EB",
-          tickformat = "%b",
-          dtick = "M1"
-        ),
+        xaxis = list(title = "Month", gridcolor = "#E5E7EB", type = "category"),
         yaxis = list(title = "Revenue", gridcolor = "#E5E7EB"),
-        font  = list(color = "#1E3A8A")
+        font = list(color = "#1E3A8A")
       )
-
   })
-
-
-  # ---- Cars Leaderboard ----
+  
+  # Booking Status Donut
+  output$bookingStatusPlot <- renderPlotly({
+    req(input$dashboard_year)
+    df <- bookings_df()
+    
+    if(input$dashboard_year != "All Time") {
+      df <- df %>% filter(year(start_date) == as.numeric(input$dashboard_year))
+    }
+    
+    if (nrow(df) == 0) return(NULL)
+    
+    df_status <- df %>%
+      group_by(status) %>%
+      summarise(count = n(), .groups = "drop") %>%
+      mutate(status = tools::toTitleCase(status))
+    
+    plot_ly(
+      df_status,
+      labels = ~status,
+      values = ~count,
+      type = "pie",
+      hole = 0.5,
+      textinfo = "none",
+      hoverlabel = list(bgcolor = "#1E3A8A", font = list(color = "#FFFFFF")),
+      marker = list(colors = c("#ffce3d","#fabd36","#f4ac31","#ed9b2d","#e58b2b")),
+      sort = FALSE
+    ) %>%
+      layout(
+        showlegend = TRUE,
+        font = list(color = "#1E3A8A"),
+        margin = list(t = 10, b = 60, l = 10, r = 10),
+        legend = list(
+          orientation = "h", x = 0.5, y = -0.1,
+          xanchor = "center", yanchor = "top",
+          traceorder = "normal", marker = list(symbol = "circle")
+        ),
+        xaxis = list(domain = c(0, 1), showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE),
+        yaxis = list(domain = c(0, 1), showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE)
+      )
+  })
+  
+  
+  
+  # Top Rented Cars
   output$carsLeaderboard <- renderUI({
-    dfb <- bookings_df()
+    dfb <- bookings_df() %>%
+      filter(!status %in% c("cancelled", "no-show"))
+    
+    if(input$dashboard_year != "All Time") {
+      dfb <- dfb %>% filter(year(start_date) == as.numeric(input$dashboard_year))
+    }    
     cars <- cars_df()
     if (nrow(dfb) == 0) return(NULL)
-
+    
     top_cars <- dfb %>%
       group_by(car_id) %>%
       summarise(
         rent_count = n(),
-        total_amount = sum(total_amount, na.rm = TRUE)
+        total_amount = sum(total_amount, na.rm = TRUE),
+        .groups = "drop"
       ) %>%
       left_join(cars, by = "car_id") %>%
       mutate(car_name = paste(brand, model)) %>%
       arrange(desc(rent_count), desc(total_amount)) %>%
       slice_head(n = 5)
-
+    
     max_stars <- 5
-
     lapply(seq_len(nrow(top_cars)), function(i) {
-      medal_icon <- switch(i,
-                           "1" = "🥇",
-                           "2" = "🥈",
-                           "3" = "🥉",
-                           tags$span(i),
-                           tags$span(i))
-
+      medal_icon <- switch(i, "1" = "🥇", "2" = "🥈", "3" = "🥉", tags$span(i), tags$span(i))
       yellow_stars <- max_stars - (i - 1)
       blue_stars <- max_stars - yellow_stars
-
       stars_html <- paste0(
         paste(rep(as.character(icon("star", class = "fas gold-star")), yellow_stars), collapse = ""),
         paste(rep(as.character(icon("star", class = "blue-star")), blue_stars), collapse = "")
       )
-
       div(class = "leaderboard-row",
           div(class = "lb-left",
               div(class = "lb-rank", medal_icon),
@@ -1762,44 +1858,40 @@ server <- function(input, output, session) {
           ),
           span(class = "lb-count", top_cars$rent_count[i])
       )
-
     })
   })
-
-  # ---- Customers Leaderboard ----
+  
+  # Top Customers
   output$customersLeaderboard <- renderUI({
-    dfb <- bookings_df()
+    dfb <- bookings_df() %>%
+      filter(!status %in% c("cancelled", "no-show"))
+    
+    if(input$dashboard_year != "All Time") {
+      dfb <- dfb %>% filter(year(start_date) == as.numeric(input$dashboard_year))
+    }    
     cust <- customers_df()
     if (nrow(dfb) == 0) return(NULL)
-
+    
     top_customers <- dfb %>%
       group_by(customer_id) %>%
       summarise(
         booking_count = n(),
-        total_amount = sum(total_amount, na.rm = TRUE)
+        total_amount = sum(total_amount, na.rm = TRUE),
+        .groups = "drop"
       ) %>%
       left_join(cust, by = "customer_id") %>%
       arrange(desc(booking_count), desc(total_amount)) %>%
       slice_head(n = 5)
-
+    
     max_stars <- 5
-
     lapply(seq_len(nrow(top_customers)), function(i) {
-      medal_icon <- switch(i,
-                           "1" = "🥇",
-                           "2" = "🥈",
-                           "3" = "🥉",
-                           tags$span(i),
-                           tags$span(i))
-
+      medal_icon <- switch(i, "1" = "🥇", "2" = "🥈", "3" = "🥉", tags$span(i), tags$span(i))
       yellow_stars <- max_stars - (i - 1)
       blue_stars <- max_stars - yellow_stars
-
       stars_html <- paste0(
         paste(rep(as.character(icon("star", class = "fas gold-star")), yellow_stars), collapse = ""),
         paste(rep(as.character(icon("star", class = "blue-star")), blue_stars), collapse = "")
       )
-
       div(class = "leaderboard-row",
           div(class = "lb-left",
               div(class = "lb-rank", medal_icon),
@@ -1811,7 +1903,6 @@ server <- function(input, output, session) {
           ),
           span(class = "lb-count", top_customers$booking_count[i])
       )
-
     })
   })
 
@@ -1842,14 +1933,19 @@ server <- function(input, output, session) {
 
 
   status_pill <- function(x) {
-    cls <- tolower(x)
+    cls <- paste0(
+      "status-",
+      gsub(" ", "-", tolower(x))
+    )
+    
     label <- tools::toTitleCase(x)
-
+    
     sprintf(
       '<span class="status-pill %s">%s</span>',
       cls, label
     )
   }
+  
 
   # Store cars data
   cars_data <- reactiveVal(safe_query("SELECT * FROM Cars ORDER BY car_id ASC"))
@@ -2195,8 +2291,12 @@ server <- function(input, output, session) {
     df_cars <- cars_df() %>% filter(status != "maintenance")
     
     booked_cars <- safe_query(paste0(
-      "SELECT car_id FROM Bookings
-     WHERE NOT (end_date < '", start_d, "' OR start_date > '", end_d, "')"
+      "SELECT car_id FROM bookings
+     WHERE status IN ('reserved','active')
+       AND NOT (
+         end_date < '", start_d, "'
+         OR start_date > '", end_d, "'
+       )"
     ))
     
     available_cars <- df_cars %>%
@@ -2243,8 +2343,10 @@ server <- function(input, output, session) {
         choices = c(
           "Select Booking Status" = "",
           "reserved",
-          "ongoing",
-          "ended"
+          "active",
+          "cancelled",
+          "no-show",
+          "completed"
         ),
         selected = ""
       )
@@ -2343,7 +2445,7 @@ server <- function(input, output, session) {
       updateDateInput(session, "start_date", value = Sys.Date())
       updateDateInput(session, "end_date", value = Sys.Date() + 1)
       updateNumericInput(session, "total_amount", value = 0)
-      updateSelectInput(session, "booking_status", selected = "ongoing")
+      updateSelectInput(session, "booking_status", selected = "active")
       
       editing_booking(FALSE)
       selected_booking_car(NULL)
@@ -2353,23 +2455,24 @@ server <- function(input, output, session) {
   }
   
   
-  has_booking_overlap <- function(car_id, start_date, end_date, exclude_booking_id = NULL) {
-    
-    q <- paste0(
-      "SELECT COUNT(*) AS n
+ has_booking_overlap <- function(car_id, start_date, end_date, exclude_booking_id = NULL) {
+  
+  q <- paste0(
+    "SELECT COUNT(*) AS n
      FROM Bookings
      WHERE car_id = ", car_id, "
-       AND NOT (end_date < '", start_date, "'
-                OR start_date > '", end_date, "')"
-    )
-    
-    # exclude current booking when updating
-    if (!is.null(exclude_booking_id)) {
-      q <- paste0(q, " AND booking_id != ", exclude_booking_id)
-    }
-    
-    dbGetQuery(con, q)$n > 0
+       AND NOT (end_date < '", start_date, "' OR start_date > '", end_date, "')",
+    " AND status NOT IN ('cancelled', 'no-show')"  # <- ignore these statuses
+  )
+  
+  # exclude current booking when updating
+  if (!is.null(exclude_booking_id)) {
+    q <- paste0(q, " AND booking_id != ", exclude_booking_id)
   }
+  
+  dbGetQuery(con, q)$n > 0
+}
+
   
   observeEvent(input$book_btn, {
     # -------------------- Validation --------------------
@@ -2393,17 +2496,17 @@ server <- function(input, output, session) {
     end_date <- as.Date(input$end_date)
     
     if (is.na(start_date) || start_date < Sys.Date()) {
-      showNotification("Start date cannot be in the past", type = "error")
+      showNotification("Pickup date cannot be in the past", type = "error")
       return()
     }
     
     if (is.na(end_date) || end_date < start_date) {
-      showNotification("End date must be on or after start date", type = "error")
+      showNotification("Return date must be on or after pickup date", type = "error")
       return()
     }
     
     if (is.na(start_date) || is.na(end_date) || end_date < start_date) {
-      showNotification("End date must be on/after start date", type = "error")
+      showNotification("Return date must be on/after pickup date", type = "error")
       return()
     }
     
@@ -2414,7 +2517,7 @@ server <- function(input, output, session) {
       has_booking_overlap(
         car_id = car_id,
         start_date = start_date,
-        end_date = end_date
+        end_date = end_date,
       )
     ) {
       showNotification(
@@ -2423,6 +2526,7 @@ server <- function(input, output, session) {
       )
       return()
     }
+    
     
     # -------------------- Customer --------------------
     qcust <- paste0(
@@ -2495,16 +2599,16 @@ server <- function(input, output, session) {
   
   # -------------------- Car Status Update --------------------
   update_car_status <- function() {
-    # Rented cars: any booking that is ongoing
+    # Rented cars: any booking that is active
     dbExecute(con, "
     UPDATE Cars SET status = 'rented' 
-    WHERE car_id IN (SELECT car_id FROM Bookings WHERE status = 'ongoing')
+    WHERE car_id IN (SELECT car_id FROM Bookings WHERE status = 'active')
   ")
     
-    # Available cars: any car that has no ongoing booking
+    # Available cars: any car that has no active booking
     dbExecute(con, "
     UPDATE Cars SET status = 'available'
-    WHERE car_id NOT IN (SELECT car_id FROM Bookings WHERE status = 'ongoing')
+    WHERE car_id NOT IN (SELECT car_id FROM Bookings WHERE status = 'active')
       AND status != 'maintenance'
   ")
   }
@@ -2544,21 +2648,23 @@ server <- function(input, output, session) {
     end_date   <- as.Date(input$end_date)
     
     # Only enforce future dates for new bookings
-    if (input$booking_status != "ended") {
+    if (input$booking_status %in% c("reserved", "active")) {
+      
       if (is.na(start_date) || start_date < Sys.Date()) {
-        showNotification("Start date cannot be in the past", type = "error")
+        showNotification("Pickup date cannot be in the past", type = "error")
         return()
       }
       
       if (is.na(end_date) || end_date < start_date) {
-        showNotification("End date must be on or after start date", type = "error")
+        showNotification("Return date must be on or after pickup date", type = "error")
         return()
       }
     }
     
     
+    
     if (is.na(start_date) || is.na(end_date) || end_date < start_date) {
-      showNotification("End date must be on/after start date", type = "error")
+      showNotification("Return date must be on/after pickup date", type = "error")
       return()
     }
     car_id     <- as.integer(input$selected_car_for_booking)
@@ -2592,13 +2698,15 @@ server <- function(input, output, session) {
     # Update Bookings table
     qbook <- paste0(
       "UPDATE Bookings SET ",
-      "car_id=", as.integer(input$selected_car_for_booking), ", ",
-      "start_date=", DBI::dbQuoteString(con, as.character(input$start_date)), ", ",
-      "end_date=", DBI::dbQuoteString(con, as.character(input$end_date)), ", ",
-      "total_amount=", round(as.numeric(input$total_amount), 2), ", ",
-      "status=", DBI::dbQuoteString(con, input$booking_status),
-      " WHERE booking_id=", row$booking_id
+      "car_id = ", as.integer(input$selected_car_for_booking), ", ",
+      "start_date = ", DBI::dbQuoteString(con, as.character(input$start_date)), ", ",
+      "end_date = ", DBI::dbQuoteString(con, as.character(input$end_date)), ", ",
+      "total_amount = ", round(as.numeric(input$total_amount), 2), ", ",
+      "status = ", DBI::dbQuoteString(con, input$booking_status), ", ",  # <- notice comma
+      "updated_at = datetime('now') ",
+      "WHERE booking_id = ", row$booking_id
     )
+    
     
     tryCatch({
       dbExecute(con, qcust)  # Update customer info
@@ -2696,7 +2804,7 @@ server <- function(input, output, session) {
         selection = "single",
         rownames = FALSE,
         colnames = c(
-          "Booking ID", "Customer", "Car", "Start Date", "End Date", "Status", "Total Amount"
+          "Booking ID", "Customer", "Car", "Pickup Date", "Return Date", "Status", "Total Amount"
         ),
         extensions = "Responsive",   # <- enable responsive extension
         options = list(pageLength = 10, responsive = TRUE, scrollX = TRUE),
