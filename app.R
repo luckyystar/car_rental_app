@@ -1820,9 +1820,10 @@ server <- function(input, output, session) {
     dfb <- bookings_df() %>%
       filter(!status %in% c("cancelled", "no-show"))
     
-    if(input$dashboard_year != "All Time") {
+    if(!is.null(input$dashboard_year) && input$dashboard_year != "All Time") {
       dfb <- dfb %>% filter(year(start_date) == as.numeric(input$dashboard_year))
-    }    
+    }
+    
     cars <- cars_df()
     if (nrow(dfb) == 0) return(NULL)
     
@@ -1866,9 +1867,10 @@ server <- function(input, output, session) {
     dfb <- bookings_df() %>%
       filter(!status %in% c("cancelled", "no-show"))
     
-    if(input$dashboard_year != "All Time") {
+    if(!is.null(input$dashboard_year) && input$dashboard_year != "All Time") {
       dfb <- dfb %>% filter(year(start_date) == as.numeric(input$dashboard_year))
-    }    
+    }
+    
     cust <- customers_df()
     if (nrow(dfb) == 0) return(NULL)
     
