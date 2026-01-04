@@ -1383,7 +1383,7 @@ server <- function(input, output, session) {
                       column(
                         width = 4,
                         div(class = "leaderboard-card",
-                            div(class = "leaderboard-title", "Rentals Over Time"),
+                            div(class = "leaderboard-title", "Monthly Rentals"),
                             plotlyOutput("rentalsTimePlot")
                         )
                       ),
@@ -1397,7 +1397,7 @@ server <- function(input, output, session) {
                       column(
                         width = 4,
                         div(class = "leaderboard-card",
-                            div(class = "leaderboard-title", "Revenue Over Time"),
+                            div(class = "leaderboard-title", "Monthly Revenue"),
                             plotlyOutput("revenueTimePlot")
                         )
                       )
@@ -1583,8 +1583,7 @@ server <- function(input, output, session) {
       safe_query("SELECT * FROM Customers ORDER BY customer_id ASC")
     }
   )
-
-
+  
 
 
   editing_booking <- reactiveVal(FALSE)
@@ -2806,11 +2805,11 @@ server <- function(input, output, session) {
         )
       )$n
       
-      if (remaining == 0) {
-        dbExecute(
-          con,
-          paste0("DELETE FROM Customers WHERE customer_id = ", row$customer_id)
-        )
+      if(remaining == 0) { 
+        dbExecute(con, paste0("DELETE FROM Customers WHERE customer_id=", row$customer_id)) 
+        showNotification("Booking and customer deleted successfully!", type = "message") 
+      } else { 
+        showNotification("Booking deleted successfully!", type = "message") 
       }
       
       # ---- FORCE fresh DB read (NO safe_query)
@@ -2832,8 +2831,6 @@ server <- function(input, output, session) {
       
       # ---- Reset form LAST
       reset_booking_fields(session)
-      
-      showNotification("Booking deleted successfully!", type = "message")
       
     }, error = function(e) {
       showNotification(
