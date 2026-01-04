@@ -989,6 +989,9 @@ server <- function(input, output, session) {
     }
     
     /* ===== FORMS ===== */
+    input[type='text'],
+    input[type='email'],
+    input[type='number'],
     select,
     textarea {
       border-radius: 10px !important;
@@ -996,9 +999,11 @@ server <- function(input, output, session) {
       padding: 8px 12px;
       font-size: 13px;
       color: #1F2937;
+      background-color: #fff; /* ensures readonly fields have white background */
     }
     
     input:focus,
+    input[type='number']:focus,
     select:focus,
     textarea:focus {
       border-color: #1E40AF !important;
@@ -1006,13 +1011,19 @@ server <- function(input, output, session) {
       outline: none !important;
     }
     
-    label {
+    input[readonly] {
+      background-color: #F3F4F6; /* slightly grey to indicate readonly */
+      cursor: not-allowed;
+    }
+    
+    label {s
       font-size: 12px;
       font-weight: 700;
       color: #1E3A8A;
       text-transform: uppercase;
       letter-spacing: 0.5px;
     }
+
 
     /* ===== TEXT / ACTION BUTTONS ===== */
     .btn {
@@ -1492,9 +1503,32 @@ server <- function(input, output, session) {
                             uiOutput("car_select_ui"),
 
                             # Row 4
-                            numericInput("car_price_day", HTML("Price per day <span style='color:red;'>*</span>"), value = 0, min = 0, step = 1, width = "100%"),
-                            numericInput("total_amount", HTML("Total Amount <span style='color:red;'>*</span>"), value = 0, min = 0, step = 1, width = "100%"),
-
+                            tags$div(
+                              tags$label(HTML("Price per day <span style='color:red;'>*</span>")),
+                              tags$input(
+                                id = "car_price_day",
+                                type = "number",
+                                value = 0,
+                                min = 0,
+                                step = 1,
+                                style = "width:100%;",
+                                readonly = "readonly"  # makes it non-editable
+                              )
+                            ),
+                            
+                            tags$div(
+                              tags$label(HTML("Total Amount <span style='color:red;'>*</span>")),
+                              tags$input(
+                                id = "total_amount",
+                                type = "number",
+                                value = 0,
+                                min = 0,
+                                step = 1,
+                                style = "width:100%;",
+                                readonly = "readonly"  # makes it non-editable
+                              )
+                            ),
+                            
                             # Row 5 - full width for status
                             tags$div(style = "grid-column: 1 / span 2;", uiOutput("booking_status_ui"))
                           ),
@@ -2329,6 +2363,7 @@ server <- function(input, output, session) {
         "selected_car_for_booking",
         label = NULL,  
         choices = choices,
+        selectize = FALSE,
         selected = as.character(selected_booking_car())
       )
       )
@@ -2341,8 +2376,8 @@ server <- function(input, output, session) {
       selectInput(
         "booking_status", 
         label = NULL,  
+        selectize = FALSE,
         choices = c(
-          "Select Booking Status" = "",
           "reserved",
           "active",
           "cancelled",
@@ -2485,7 +2520,7 @@ server <- function(input, output, session) {
         updateSelectInput(
           session,
           "booking_status",
-          selected = "active"
+          selected = "reserved"
         ),
         silent = TRUE
       )
