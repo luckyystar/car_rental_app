@@ -2387,74 +2387,120 @@ server <- function(input, output, session) {
   
   
   selected_booking_row <- reactive({
-    s <- input$booking_table_rows_selected
-    if(length(s) == 0) return(NULL)
     
-    b <- bookings_df()
-    c <- cars_df() %>% select(car_id, brand, model)
-    cust <- customers_df() %>% select(customer_id, name)
+    sel <- input$booking_table_rows_selected
+    if (is.null(sel) || length(sel) == 0) return(NULL)
     
-    b2 <- left_join(b, cust, by = "customer_id") %>% 
-      left_join(c, by = "car_id") %>%
-      mutate(Car = paste(brand, model, sep = " - ")) %>%
-      select(booking_id, customer_id, car_id, Customer = name, Car, start_date, end_date, total_amount, status) %>%
-      arrange(desc(as.Date(start_date)))
+    # Get booking_id from DT (hidden column 0)
+    proxy <- DT::dataTableProxy("booking_table")
+    booking_id <- isolate(
+      bookings_data()$booking_id[
+        bookings_data()$booking_id %in%
+          bookings_data()$booking_id
+      ]
+    )
     
-    b2[s, , drop = FALSE]
+    b2 <- isolate({
+      b <- bookings_data()
+      c <- cars_data() %>% select(car_id, brand, model)
+      cust <- customers_df() %>% select(customer_id, name)
+      
+      left_join(b, cust, by = "customer_id") %>%
+        left_join(c, by = "car_id") %>%
+        arrange(desc(as.Date(start_date)))
+    })
+    
+    selected_id <- b2$booking_id[sel]
+    
+    bookings_data()[bookings_data()$booking_id == selected_id, , drop = FALSE]
   })
   
-  observe({
+  
+  
+  observeEvent(input$booking_table_rows_selected, {
+    
     row <- selected_booking_row()
     if (is.null(row)) return()
     
     editing_booking(TRUE)
+    selected_booking_car(row$car_id)
     
-    selected_booking_car(as.integer(row$car_id))
+    cust <- dbGetQuery(
+      con,
+      paste0("SELECT * FROM Customers WHERE customer_id = ", row$customer_id)
+    )
+    
+    updateTextInput(session, "cust_name", value = cust$name)
+    updateTextInput(session, "cust_contact", value = cust$contact)
+    updateTextInput(session, "cust_email", value = cust$email)
+    
+    updateSelectInput(
+      session,
+      "selected_car_for_booking",
+      selected = as.character(row$car_id)
+    )
     
     updateDateInput(session, "start_date", value = as.Date(row$start_date))
     updateDateInput(session, "end_date", value = as.Date(row$end_date))
     
-    # Customer info
-    cust <- safe_query(paste0(
-      "SELECT * FROM Customers WHERE customer_id = ", row$customer_id
-    ))
-    
-    if (nrow(cust) > 0) {
-      updateTextInput(session, "cust_name", value = cust$name)
-      updateTextInput(session, "cust_contact", value = cust$contact)
-      updateTextInput(session, "cust_email", value = cust$email)
-    }
-    
+    updateNumericInput(session, "total_amount", value = row$total_amount)
     updateSelectInput(session, "booking_status", selected = row$status)
     
-    price <- safe_query(
-      paste0("SELECT price_per_day FROM Cars WHERE car_id = ", row$car_id)
-    )$price_per_day
-    
-    updateNumericInput(session, "car_price_day", value = price)
-    updateNumericInput(session, "total_amount", value = row$total_amount)
-  })
+  }, ignoreInit = TRUE)
+  
   
   # ---------------- Booking CRUD ----------------
   
   reset_booking_fields <- function(session) {
-    isolate({
-      updateTextInput(session, "cust_name", value = "")
-      updateTextInput(session, "cust_contact", value = "")
-      updateTextInput(session, "cust_email", value = "")
-      updateSelectInput(session, "selected_car_for_booking", selected = character(0))
-      updateNumericInput(session, "car_price_day", value = 0)
-      updateDateInput(session, "start_date", value = Sys.Date())
-      updateDateInput(session, "end_date", value = Sys.Date() + 1)
-      updateNumericInput(session, "total_amount", value = 0)
-      updateSelectInput(session, "booking_status", selected = "active")
+    
+    # Prevent table-selection observer from re-filling inputs
+    freezeReactiveValue(input, "booking_table_rows_selected")
+    
+    # ---- Basic inputs (safe)
+    updateTextInput(session, "cust_name", value = "")
+    updateTextInput(session, "cust_contact", value = "")
+    updateTextInput(session, "cust_email", value = "")
+    
+    updateNumericInput(session, "car_price_day", value = 0)
+    updateNumericInput(session, "total_amount", value = 0)
+    
+    updateDateInput(session, "start_date", value = Sys.Date())
+    updateDateInput(session, "end_date", value = Sys.Date() + 1)
+    
+    editing_booking(FALSE)
+    selected_booking_car(NULL)
+    
+    # ---- Dynamic UI inputs (delay + no reactive reads)
+    session$onFlushed(function() {
       
-      editing_booking(FALSE)
-      selected_booking_car(NULL)
+      try(
+        updateSelectInput(
+          session,
+          "selected_car_for_booking",
+          selected = ""
+        ),
+        silent = TRUE
+      )
       
-      DT::dataTableProxy("booking_table") %>% DT::selectRows(NULL)
-    })
+      try(
+        updateSelectInput(
+          session,
+          "booking_status",
+          selected = "active"
+        ),
+        silent = TRUE
+      )
+      
+      # Clear DT selection LAST
+      DT::selectRows(
+        DT::dataTableProxy("booking_table"),
+        NULL
+      )
+      
+    }, once = TRUE)
   }
+  
+  
   
   
  has_booking_overlap <- function(car_id, start_date, end_date, exclude_booking_id = NULL) {
@@ -2711,66 +2757,92 @@ server <- function(input, output, session) {
     
     
     tryCatch({
-      dbExecute(con, qcust)  # Update customer info
-      dbExecute(con, qbook)  # Update booking info
+      dbExecute(con, qcust)
+      dbExecute(con, qbook)
       
       update_car_status()
-      
-      showNotification("Booking and customer info updated successfully!", type = "message")
-      
-      DT::dataTableProxy("booking_table") %>% DT::selectRows(NULL)
-      
-      reset_booking_fields(session)
       
       bookings_data(
         safe_query("SELECT booking_id, customer_id, car_id, start_date, end_date, total_amount, status FROM Bookings ORDER BY booking_id DESC")
       )
       cars_data(safe_query("SELECT * FROM Cars ORDER BY car_id ASC"))
+      
+      reset_booking_fields(session)
+      
+      showNotification("Booking and customer info updated successfully!", type = "message")
       
     }, error = function(e) {
       showNotification(paste("Update error:", e$message), type = "error")
     })
+    
   })
   
   # -------------------- Delete Booking --------------------
   observeEvent(input$delete_booking_btn, {
+    
     row <- selected_booking_row()
-    if(is.null(row)) { 
+    if (is.null(row)) {
       showNotification("Select a booking to delete", type = "warning")
-      return() 
+      return()
     }
     
     tryCatch({
-      # Delete the booking
-      dbExecute(con, paste0("DELETE FROM Bookings WHERE booking_id=", row$booking_id))
       
-      # Update car status
+      # ---- DELETE booking
+      dbExecute(
+        con,
+        paste0("DELETE FROM Bookings WHERE booking_id = ", row$booking_id)
+      )
+      
+      # ---- Update car status
       update_car_status()
       
-      # Check if the customer has any other bookings
-      remaining <- dbGetQuery(con, paste0(
-        "SELECT COUNT(*) AS n FROM Bookings WHERE customer_id=", row$customer_id
-      ))$n
+      # ---- Delete customer if no remaining bookings
+      remaining <- dbGetQuery(
+        con,
+        paste0(
+          "SELECT COUNT(*) AS n FROM Bookings WHERE customer_id = ",
+          row$customer_id
+        )
+      )$n
       
-      # Delete customer if no more bookings
-      if(remaining == 0) {
-        dbExecute(con, paste0("DELETE FROM Customers WHERE customer_id=", row$customer_id))
-        showNotification("Booking and customer deleted successfully!", type = "message")
-      } else {
-        showNotification("Booking deleted successfully!", type = "message")
+      if (remaining == 0) {
+        dbExecute(
+          con,
+          paste0("DELETE FROM Customers WHERE customer_id = ", row$customer_id)
+        )
       }
       
-      # Reset fields and refresh data
-      reset_booking_fields(session)
+      # ---- FORCE fresh DB read (NO safe_query)
       bookings_data(
-        safe_query("SELECT booking_id, customer_id, car_id, start_date, end_date, total_amount, status FROM Bookings ORDER BY booking_id DESC")
+        dbGetQuery(
+          con,
+          "SELECT booking_id, customer_id, car_id, start_date, end_date, total_amount, status
+         FROM Bookings
+         ORDER BY booking_id DESC"
+        )
       )
-      cars_data(safe_query("SELECT * FROM Cars ORDER BY car_id ASC"))
+      
+      cars_data(
+        dbGetQuery(
+          con,
+          "SELECT * FROM Cars ORDER BY car_id ASC"
+        )
+      )
+      
+      # ---- Reset form LAST
+      reset_booking_fields(session)
+      
+      showNotification("Booking deleted successfully!", type = "message")
       
     }, error = function(e) {
-      showNotification(paste("Booking delete error:", e$message), type = "error")
+      showNotification(
+        paste("Booking delete error:", e$message),
+        type = "error"
+      )
     })
   })
+  
   
   
   # Store bookings data
@@ -2779,43 +2851,59 @@ server <- function(input, output, session) {
   )
   
   output$booking_table <- renderDT({
+    
     b <- bookings_data()
     c <- cars_data() %>% select(car_id, brand, model)
     cust <- customers_df() %>% select(customer_id, name)
     
-    if(nrow(b) > 0){
-      b2 <- left_join(b, cust, by = "customer_id") %>%
-        left_join(c, by = "car_id") %>%
-        mutate(
-          BookingID = sprintf("BOOK-%03d", booking_id),
-          Car = paste(brand, model, sep = " - "),
-          total_amount = paste0("₱", format(total_amount, big.mark = ",", nsmall = 2)),
-          status = status_pill(status)
-        ) %>%
-        select(BookingID, name, Car, start_date, end_date, status, total_amount) %>%
-        rename(
-          Customer = name,
-          Start    = start_date,
-          End      = end_date,
-          Total    = total_amount
-        ) %>%
-        arrange(desc(as.Date(Start)))
-      
-      datatable(
-        b2,
-        selection = "single",
-        rownames = FALSE,
-        colnames = c(
-          "Booking ID", "Customer", "Car", "Pickup Date", "Return Date", "Status", "Total Amount"
-        ),
-        extensions = "Responsive",   # <- enable responsive extension
-        options = list(pageLength = 10, responsive = TRUE, scrollX = TRUE),
-        escape = FALSE
-      )
-    } else {
-      datatable(data.frame(), rownames = FALSE)
+    if (nrow(b) == 0) {
+      return(datatable(data.frame(), rownames = FALSE))
     }
+    
+    b2 <- left_join(b, cust, by = "customer_id") %>%
+      left_join(c, by = "car_id") %>%
+      mutate(
+        BookingID = sprintf("BOOK-%03d", booking_id),
+        Car = paste(brand, model, sep = " - "),
+        Total = paste0("₱", format(total_amount, big.mark = ",", nsmall = 2)),
+        Status = status_pill(status)
+      ) %>%
+      select(
+        booking_id,      # ✅ KEEP hidden key
+        BookingID,
+        Customer = name,
+        Car,
+        Start = start_date,
+        End   = end_date,
+        Status,
+        Total
+      ) %>%
+      arrange(desc(as.Date(Start)))
+    
+    datatable(
+      b2,
+      selection = "single",
+      rownames = FALSE,
+      escape = FALSE,
+      colnames = c(
+        "", "Booking ID", "Customer", "Car",
+        "Pickup Date", "Return Date", "Status", "Total Amount"
+      ),
+      options = list(
+        pageLength = 10,
+        responsive = TRUE,
+        scrollX = TRUE,
+        columnDefs = list(
+          list(
+            targets = 0,      # hide booking_id
+            visible = FALSE,
+            searchable = FALSE
+          )
+        )
+      )
+    )
   })
+  
   
   # ---------------- Customers Table ----------------
   
