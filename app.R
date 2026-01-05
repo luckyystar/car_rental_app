@@ -1660,13 +1660,14 @@ server <- function(input, output, session) {
   cars_df <- reactivePoll(
     poll_interval_ms, session,
     checkFunc = function() {
-      r <- safe_query("SELECT MAX(updated_at) AS last FROM Cars")
-      as.character(r$last)
+      r <- safe_query("SELECT COUNT(*) AS n, MAX(updated_at) AS last FROM Cars")
+      paste0(r$n, "_", r$last)
     },
     valueFunc = function() {
       safe_query("SELECT * FROM Cars ORDER BY car_id ASC")
     }
   )
+  
   
   poll_interval_ms <- 1000  
   
