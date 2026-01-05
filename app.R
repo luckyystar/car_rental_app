@@ -485,7 +485,7 @@ server <- function(input, output, session) {
           title = tagList(
             tags$div(
               style = "display: flex; align-items: center; margin-left: -15px;",
-              tags$img(src = "uploads/logo.png", height = "40px", width = "5000px", style = "margin-top:5px;"),
+              tags$img(src = "uploads/logo.png", height = "40px", width = "250px", style = "margin-top:5px;"),
               span(uiOutput("page_title_ui"), style = "font-weight:700; font-size:22px; color:#334155;")
             )
           ),
@@ -498,14 +498,15 @@ server <- function(input, output, session) {
           )
         ),
         dashboardSidebar(
-          div(
-            class = "sidebar-user-panel",
-            tags$div(class = "user-icon", icon("user")),
-            tags$div(class = "user-name", "crsadmin"),
-            tags$div(class = "user-role", "administrator")
+          # LOGO / TITLE
+          tags$div(
+            class = "sidebar-logo",
+            icon("car", class = "logo-icon"),
+            tags$h2("CarGo"),
+            tags$p("Admin Portal")
           ),
           
-          # Main menu items
+          # NAVIGATION
           sidebarMenu(
             id = "tabs",
             menuItem("Dashboard", tabName = "dashboard", icon = icon("tachometer-alt"), selected = TRUE),
@@ -514,6 +515,17 @@ server <- function(input, output, session) {
             menuItem("Customers", tabName = "customers", icon = icon("users"))
           ),
           
+          tags$div(style = "flex-grow:1;"),
+          
+          # USER PROFILE
+          tags$div(
+            class = "sidebar-user",
+            tags$div(class = "avatar", "A"),
+            tags$div(
+              tags$p("Admin User", class = "user-name"),
+              tags$p("admin@gmail.com", class = "user-email")
+            )
+          ),
           width = 230
         ),
         dashboardBody(
@@ -536,29 +548,10 @@ server <- function(input, output, session) {
       button {
         font-family: 'Inter', sans-serif !important;
       }
-
-    /* ===== HEADER ===== */
-    .skin-blue .main-header .logo {
-      background-color: #FCD34D !important;
-      color: #1F2937 !important;
-      font-weight: 700;
-    }
-    .skin-blue .main-header .logo:hover {
-      background-color: #FCD34D !important;
-      color: #1F2937 !important;
-    }
-    
-    .skin-blue .main-header .navbar {
-      background-color: #FCD34D !important;
-    }
-    
     
     /* Hamburger */
     .sidebar-toggle {
       color: #1D4ED8 !important;  
-    }
-    .skin-blue .main-header .navbar .sidebar-toggle:hover {
-      background-color: rgba(0,0,0,0.05) !important;
     }
     
     .main-header .logo {
@@ -569,46 +562,155 @@ server <- function(input, output, session) {
     
      /* ===== SIDEBAR ===== */
     .main-sidebar {
-        min-height: 100vh !important;  
-        position: fixed;               
-        overflow-y: auto;              
+      position: fixed;
+      top: 0;
+      left: 0;
+      height: 100vh;
+      overflow: hidden; 
     }
-    
+
     .content-wrapper {
         margin-left: 230px; 
         min-height: 100vh;
         background-color: #F9FAFB; 
     }
     
+    
+    
+    /* ----- SIDEBAR BASE ----- */
     .main-sidebar,
-    .main-sidebar .sidebar,
-    .left-side {
-      background-color: #1E3A8A !important;
+    .main-sidebar .sidebar {
+      background: linear-gradient(180deg, #1E3A8A 0%, #2C4CB3 100%) !important;
+    }
+
+    .sidebar-logo {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 28px 10px 22px;
+      border-bottom: 1px solid rgba(255,255,255,0.15);
+      text-align: center;
+    }
+    
+    .sidebar-logo .logo-icon {
+      width: 56px;
+      height: 56px;
+      border-radius: 50%;
+      background-color: #FCD34D;
+      color: #1E3A8A;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 26px;
+      margin-bottom: 12px;
+    }
+    
+    .sidebar-logo h2 {
+      margin: 0;
+      font-size: 20px;
+      font-weight: 800;
+      color: #FFFFFF;
+      line-height: 1.2;
+    }
+    
+    .sidebar-logo p {
+      margin: 2px 0 0;
+      font-size: 12px;
+      color: #CBD5F5;
+    }
+    
+    .main-sidebar .sidebar {
+      display: flex;
+      flex-direction: column;
+      height: calc(100vh - 50px); 
+      overflow-y: auto;          
+      padding-bottom: 10px;      
+    }
+    
+    /* ===== SIDEBAR USER ===== */
+    .sidebar-user {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 16px;
+      border-top: 1px solid rgba(255,255,255,0.15);
+      margin-top: auto;
+    }
+    
+    .sidebar-user .avatar {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background-color: #FCD34D; /* yellow */
+      color: #1E3A8A;
+      font-weight: 800;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+      flex-shrink: 0;
+    }
+    
+    .sidebar-user .user-name {
+      color: #FFFFFF;
+      font-weight: 700;
+      font-size: 13px;
+      margin: 0;
+      line-height: 1.2;
+    }
+    
+    .sidebar-user .user-email {
+      color: #CBD5F5;
+      font-size: 11px;
+      margin: 0;
+    }
+    
+    .sidebar-menu {
+      margin-top: 12px;
     }
     
     .sidebar-menu > li > a {
+      margin: 6px 10px;
+      border-radius: 10px;
       color: #E5E7EB !important;
       font-weight: 600;
+      padding: 12px 14px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      position: relative;
+      transition: all 0.2s ease;
     }
     
+    /* icon */
+    .sidebar-menu > li > a > .fa,
+    .sidebar-menu > li > a > .fas {
+      font-size: 16px;
+      color: #E5E7EB !important;
+    }
+    
+    /* hover */
     .sidebar-menu > li > a:hover {
-      background-color: #1D4ED8 !important;
+      background-color: rgba(255,255,255,0.12) !important;
       color: #FFFFFF !important;
     }
     
     .sidebar-menu > li.active > a {
-      background-color: #1D4ED8 !important;
+      background-color: #425BAE !important;
       color: #FFFFFF !important;
+      font-weight: 700;
+      position: relative; /* needed for ::before positioning */
     }
     
-    .sidebar-menu > li > a > .fa,
-    .sidebar-menu > li > a > .fas {
-      color: #E5E7EB !important;
-    }
-    
-    .sidebar-menu > li.active > a > .fa,
-    .sidebar-menu > li.active > a > .fas {
-      color: #FFFFFF !important;
+    .sidebar-menu > li.active > a::before {
+      content: '';
+      position: absolute;
+      left: 0; /* align inside the link */
+      top: 0;  /* start at top of link */
+      width: 4px; /* thickness of the line */
+      height: 100%; /* full height of link */
+      background-color: #FCD34D;
+      border-radius: 0 4px 4px 0; /* rounded on right side */
     }
     
     /* Desktop */
@@ -659,40 +761,6 @@ server <- function(input, output, session) {
       }
     
     }
-
-    /* ===== SIDEBAR USER PANEL ===== */
-    .sidebar-user-panel {
-      text-align: center;
-      padding: 20px 10px;
-      border-bottom: 1px solid rgba(255,255,255,0.15);
-    }
-    
-    .user-icon {
-      width: 56px;
-      height: 56px;
-      border-radius: 50%;
-      background: #1D4ED8;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      margin: 0 auto 10px auto;
-      color: #FFFFFF;
-      font-size: 26px;
-    }
-    
-    .user-name {
-      font-weight: 700;
-      color: #FFFFFF;
-      font-size: 14px;
-    }
-    
-    .user-role {
-      font-size: 11px;
-      color: #E5E7EB;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-    }
-
     
     /* ===== Tab Page Title ===== */
     .tab-page-title { 
@@ -2921,13 +2989,13 @@ server <- function(input, output, session) {
         "", "Booking ID", "Customer", "Car",
         "Pickup Date", "Return Date", "Status", "Total Amount"
       ),
+      extensions = "Responsive",  
       options = list(
         pageLength = 10,
         responsive = TRUE,
-        scrollX = TRUE,
         columnDefs = list(
           list(
-            targets = 0,      # hide booking_id
+            targets = 0,      
             visible = FALSE,
             searchable = FALSE
           )
@@ -2955,7 +3023,7 @@ server <- function(input, output, session) {
         "Contact",
         "Email"
       ),
-      extensions = "Responsive",   # <- enable responsive extension
+      extensions = "Responsive",   
       options = list(pageLength = 10, responsive = TRUE, scrollX = TRUE)
     )
   })
